@@ -6,5 +6,7 @@ project(Mini_Shell C)
 set(CMAKE_C_STANDARD 17)
 
 # add the executable
-add_executable(Mini_Shell main.c)
+add_executable(${PROJECT_NAME} main.c)
+
+target_link_libraries(${PROJECT_NAME} readline)
 
