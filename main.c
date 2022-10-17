@@ -38,22 +38,25 @@ int main()
 
 
 void print_prompt() {
-	char* cwd = NULL;
+	char *cwd, *host = NULL;
 	size_t allocSize = sizeof(char) * MAX_PATH;
 	cwd = (char *)malloc(allocSize);
 
+//	Source: https://stackoverflow.com/questions/8953424/how-to-get-the-username-in-c-c-in-linux
+//	Gets user id
+	printf("%s@", getlogin());
+
 //	Source: https://stackoverflow.com/questions/504810/how-do-i-find-the-current-machines-full-hostname-in-c-hostname-and-domain-info
 //	Gets hostname of machine
-	char* host = NULL;
 	host = (char *)malloc(allocSize);
 	gethostname(host, allocSize);
-	printf("%s @ ", host);
+	printf("%s:", host);
 
 //	Source: https://stackoverflow.com/questions/298510/how-to-get-the-current-directory-in-a-c-program
 //	Gets current path of user
 	getcwd(cwd, allocSize);
 	if (getcwd(cwd, allocSize) != NULL) {
-		printf("%s-> ", cwd);
+		printf("%s$ ", cwd);
 	}
 	else {
 		perror("getcwd() error");
