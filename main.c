@@ -16,19 +16,39 @@ int main()
     rl_bind_key('\t', rl_complete);
 
     while (1) {
+		int childPid;
+
         // Display prompt and read input
 		print_prompt();
+
         char* input = readline("");
 
         // Check for EOF.
         if (!input)
             break;
 
+//		cmd = parseCommand(cmdLine);
+
         // Add input to readline history.
         add_history(input);
 
         // Do stuff...
-
+//		if (isBuiltInCommand(cmd)){
+//			executeBuiltInCommand(cmd);
+//		} else {
+//			childPid = fork();
+//			if (childPid == 0){
+//				executeCommand(cmd); //calls execvp
+//
+//			} else {
+//				if (isBackgroundJob(cmd)){
+//					record in list of background jobs
+//				} else {
+//					waitpid (childPid);
+//
+//				}
+//			}
+//		}
 
         // Free buffer that was allocated by readline
         free(input);
