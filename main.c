@@ -5,6 +5,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <setjmp.h>
+#include "parser.c"
+
 
 void print_prompt();
 int MAX_PATH = 1024;
@@ -27,7 +29,7 @@ int main()
         if (!input)
             break;
 
-//		cmd = parseCommand(cmdLine);
+		parse(input);
 
         // Add input to readline history.
         add_history(input);
