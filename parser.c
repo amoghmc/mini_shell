@@ -15,14 +15,16 @@
  * Accepts: nothing
  * Returns: parse information structure
  */
+
 #define MAXLINE 81
-int TEMP;
 
 char **split_string(char *cmdline, int *n_delims, char* delim);
+
 
 void init_info(parseInfo *p) {
 	printf("\ninit_info: initializing parseInfo\n");
 }
+
 
 void parse_command(char * command, struct commandType *comm) {
 	printf("\nparse_command: parsing a single command\n");
