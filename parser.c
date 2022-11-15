@@ -19,11 +19,11 @@
 
 
 void init_info(parseInfo *p) {
-	printf("init_info: initializing parseInfo\n");
+	printf("\ninit_info: initializing parseInfo\n");
 }
 
 void parse_command(char * command, struct commandType *comm) {
-	printf("parse_command: parsing a single command\n");
+	printf("\nparse_command: parsing a single command\n");
 }
 
 
@@ -40,32 +40,25 @@ parseInfo *parse (char *cmdline) {
 	Result = malloc(sizeof(parseInfo));
 	init_info(Result);
 
-	bool check = false;
-
-	char ** res  = NULL;
-	char *  p    = strtok (cmdline, " ");
+	char ** res = NULL;
+	char *  delim_space = strtok (cmdline, " ");
 	int com_pos = 0, i;
 
-
 /* split string and append tokens to 'res' */
-
-	while (p) {
+	while (delim_space) {
 		res = realloc (res, sizeof (char*) * ++com_pos);
-
-		if (res == NULL)
-			exit (-1); /* memory allocation failed */
-
-		res[com_pos - 1] = p;
-
-		p = strtok (NULL, " ");
+		if (res == NULL) {
+			printf("Error: Memory allocation failed!");
+			exit(-1); /* memory allocation failed */
+		}
+		res[com_pos - 1] = delim_space;
+		delim_space = strtok (NULL, " ");
 	}
 
 /* reallocate one extra element for the last NULL */
-
 	res = realloc (res, sizeof (char*) * (com_pos + 1));
 	res[com_pos] = NULL;
 
-	/* print the result */
 
 	for (i = 0; i < (com_pos); ++i) {
 		Result->CommArray[0].VarList[i] = res[i + 1];
@@ -74,16 +67,20 @@ parseInfo *parse (char *cmdline) {
 	Result->CommArray[0].VarNum = com_pos - 1;
 
 
-	print_info(Result);
+//	print_info(Result);
 	free(res);
+	free(delim_space);
 
 	parse_command(cmdline, &Result->CommArray[0]); /* &Result->CommArray[Result->pipeNum]);*/
+//	free_info(Result);
 	return Result;
 }
 
 void print_info (parseInfo *info) {
 	printf("print_info: printing info about parseInfo struct\n");
 	printf("Command: %s\n", info->CommArray[0].command);
+
+
 	for (int i = 0; i < info->CommArray[0].VarNum; i++) {
 		printf("Arg[%d]: %s\n", i, info->CommArray[0].VarList[i]);
 	}

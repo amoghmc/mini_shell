@@ -1,10 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <limits.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <setjmp.h>
 #include "parser.c"
 
 
@@ -29,7 +27,9 @@ int main()
         if (!input)
             break;
 
-		parse(input);
+		parseInfo* result = parse(input);
+		print_info(result);
+		free_info(result);
 
         // Add input to readline history.
         add_history(input);
