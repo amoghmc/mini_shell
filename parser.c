@@ -3,11 +3,9 @@
  *   Syntax:     myshell command1 [< infile] [| command]* [> outfile] [&]
  ************************************************************************/
 
-#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include "parse.h"
 
 /* parse - parse a new line 
@@ -20,13 +18,17 @@
 
 char **split_string(char *cmdline, int *n_delims, char *delim);
 
-void init_info(parseInfo *p) {
+void init_info(parseInfo *info) {
 	printf("init_info: initializing parseInfo\n");
+	info = malloc(sizeof(parseInfo));
+	info->boolBackground = 0;
+	info->boolInfile = 0;
+	info->boolOutfile = 0;
 }
 
 
 void parse_command(char *command, struct commandType *comm) {
-	printf("\nparse_command: parsing a single command\n");
+	printf("parse_command: parsing a single command\n");
 }
 
 
@@ -41,10 +43,9 @@ parseInfo *parse(char *cmdline) {
 
 	if (strlen(cmdline) + 1 > MAXLINE) {
 		printf("Error: command too big to parse!");
-		exit(1);
+		return Result;
 	}
 
-	Result = malloc(sizeof(parseInfo));
 	init_info(Result);
 
 	int delims_pipes, delims_spaces = 0;
@@ -53,7 +54,9 @@ parseInfo *parse(char *cmdline) {
 
 	if (delims_pipes > PIPE_MAX_NUM) {
 		printf("Error: too many pipes to parse!");
-		exit(1);
+		free(res_pipe);
+		free_info(Result);
+		return Result;
 	}
 	int i;
 
@@ -64,7 +67,9 @@ parseInfo *parse(char *cmdline) {
 
 		if (delims_spaces > MAX_VAR_NUM) {
 			printf("Error: too many arguments for a single command to parse!");
-			exit(1);
+			free(res_space);
+			free_info(Result);
+			return Result;
 		}
 		for (int j = 0; j < delims_spaces; j++) {
 			Result->CommArray[i].VarList[j] = res_space[j + 1];
@@ -86,10 +91,19 @@ void print_info(parseInfo *info) {
 
 //	for each command separated by pipe
 	for (int i = 0; i < info->pipeNum; i++) {
-		printf("Command: %s\n", info->CommArray[i].command);
+		printf("Command[%d]: %s\n", i, info->CommArray[i].command);
 		for (int k = 0; k < info->CommArray[i].VarNum; k++) {
+			if (strcmp(info->CommArray[i].VarList[k], "&") == 0) {
+				info->boolBackground = 1;
+			}
 			printf("Arg[%d]: %s\n", k, info->CommArray[i].VarList[k]);
 		}
+	}
+	if (info->boolBackground) {
+		printf("Background: Yes\n");
+	}
+	else {
+		printf("Background: No");
 	}
 }
 

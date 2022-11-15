@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <stdbool.h>
 #include "parser.c"
 
 
