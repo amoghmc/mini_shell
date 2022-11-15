@@ -7,34 +7,34 @@
 
 
 void print_prompt();
+
 int MAX_PATH = 1024;
 
 //	Readline template source: https://en.wikipedia.org/wiki/GNU_Readline
-int main()
-{
-    // Configure readline to auto-complete paths when the tab key is hit.
-    rl_bind_key('\t', rl_complete);
+int main() {
+	// Configure readline to auto-complete paths when the tab key is hit.
+	rl_bind_key('\t', rl_complete);
 
-    while (1) {
+	while (1) {
 		int childPid;
 
-        // Display prompt and read input
+		// Display prompt and read input
 		print_prompt();
 
-        char* input = readline("");
+		char *input = readline("");
 
-        // Check for EOF.
-        if (!input)
-            break;
+		// Check for EOF.
+		if (!input)
+			break;
 
-		parseInfo* result = parse(input);
+		parseInfo *result = parse(input);
 		print_info(result);
 		free_info(result);
 
-        // Add input to readline history.
-        add_history(input);
+		// Add input to readline history.
+		add_history(input);
 
-        // Do stuff...
+		// Do stuff...
 //		if (isBuiltInCommand(cmd)){
 //			executeBuiltInCommand(cmd);
 //		} else {
@@ -52,17 +52,17 @@ int main()
 //			}
 //		}
 
-        // Free buffer that was allocated by readline
-        free(input);
-    }
-    return 0;
+		// Free buffer that was allocated by readline
+		free(input);
+	}
+	return 0;
 }
 
 
 void print_prompt() {
 	char *cwd, *host = NULL;
 	size_t allocSize = sizeof(char) * MAX_PATH;
-	cwd = (char *)malloc(allocSize);
+	cwd = (char *) malloc(allocSize);
 
 //	Source: https://stackoverflow.com/questions/8953424/how-to-get-the-username-in-c-c-in-linux
 //	Gets user id
@@ -70,7 +70,7 @@ void print_prompt() {
 
 //	Source: https://stackoverflow.com/questions/504810/how-do-i-find-the-current-machines-full-hostname-in-c-hostname-and-domain-info
 //	Gets hostname of machine
-	host = (char *)malloc(allocSize);
+	host = (char *) malloc(allocSize);
 	gethostname(host, allocSize);
 	printf("%s:", host);
 
@@ -79,8 +79,7 @@ void print_prompt() {
 	getcwd(cwd, allocSize);
 	if (getcwd(cwd, allocSize) != NULL) {
 		printf("%s$ ", cwd);
-	}
-	else {
+	} else {
 		perror("getcwd() error");
 	}
 
