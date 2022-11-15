@@ -18,7 +18,7 @@
 #define MAXLINE 81
 int TEMP;
 
-char ** split_string(char* cmdline, int* n_delims);
+char **split_string(char *cmdline, int *n_delims, char* delim);
 
 void init_info(parseInfo *p) {
 	printf("\ninit_info: initializing parseInfo\n");
@@ -44,23 +44,24 @@ parseInfo *parse (char *cmdline) {
 
 	int delims_pipes, delims_spaces = 0;
 //	splits string separated by pipes
-	char ** res_pipe = split_string(cmdline, &delims_pipes);
+	char ** res_pipe = split_string(cmdline, &delims_pipes, "|");
 
-
+	int i;
 //	for each command separated by pipe
-	for (int i = 0; i < delims_pipes; i++) {
+	for (i = 0; i < delims_pipes; i++) {
 
 //		split sub-command separated by spaces
-		char ** res_space = split_string(res_pipe[i], &delims_spaces);
+		char ** res_space = split_string(res_pipe[i], &delims_spaces, " ");
 
 		for (int j = 0; j < delims_spaces; j++) {
-			Result->CommArray[i].VarList[j] = res_space[i + 1];
+			Result->CommArray[i].VarList[j] = res_space[j + 1];
 		}
 		Result->CommArray[i].command = res_space[0];
 		Result->CommArray[i].VarNum = delims_spaces - 1;
+
 		free(res_space);
 	}
-
+	Result->pipeNum = i;
 
 
 //	print_info(Result);
@@ -75,12 +76,18 @@ parseInfo *parse (char *cmdline) {
 
 void print_info (parseInfo *info) {
 	printf("print_info: printing info about parseInfo struct\n");
-	printf("Command: %s\n", info->CommArray[0].command);
 
-
-	for (int i = 0; i < info->CommArray[0].VarNum; i++) {
-		printf("Arg[%d]: %s\n", i, info->CommArray[0].VarList[i]);
+//	for each command separated by pipe
+	for (int i = 0; i < info->pipeNum; i++) {
+		printf("Command: %s\n", info->CommArray[i].command);
+		for (int k = 0; k < info->CommArray[i].VarNum; k++) {
+			printf("Arg[%d]: %s\n", k, info->CommArray[i].VarList[k]);
+		}
 	}
+
+
+
+
 }
  
 void free_info (parseInfo *info) {
@@ -89,9 +96,10 @@ void free_info (parseInfo *info) {
 }
 
 // Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
-char ** split_string(char* cmdline, int* n_delim) {
+char ** split_string(char* cmdline, int* n_delim, char* delim) {
 	char ** res = NULL;
-	char *  delim_space = strtok (cmdline, "|");
+	char *  delim_space = strtok (cmdline, delim);
+	*n_delim = 0;
 
 /* split string and append tokens to 'res' */
 	while (delim_space) {
@@ -101,7 +109,7 @@ char ** split_string(char* cmdline, int* n_delim) {
 			exit(-1); /* memory allocation failed */
 		}
 		res[*n_delim - 1] = delim_space;
-		delim_space = strtok (NULL, "|");
+		delim_space = strtok (NULL, delim);
 	}
 
 /* reallocate one extra element for the last NULL */
