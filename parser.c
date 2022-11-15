@@ -16,7 +16,9 @@
  * Returns: parse information structure
  */
 #define MAXLINE 81
+int TEMP;
 
+char ** split_string(char* cmdline, int* n_delims);
 
 void init_info(parseInfo *p) {
 	printf("\ninit_info: initializing parseInfo\n");
@@ -40,36 +42,31 @@ parseInfo *parse (char *cmdline) {
 	Result = malloc(sizeof(parseInfo));
 	init_info(Result);
 
-	char ** res = NULL;
-	char *  delim_space = strtok (cmdline, " ");
-	int com_pos = 0, i;
+	int delims_pipes, delims_spaces = 0;
+//	splits string separated by pipes
+	char ** res_pipe = split_string(cmdline, &delims_pipes);
 
-/* split string and append tokens to 'res' */
-	while (delim_space) {
-		res = realloc (res, sizeof (char*) * ++com_pos);
-		if (res == NULL) {
-			printf("Error: Memory allocation failed!");
-			exit(-1); /* memory allocation failed */
+
+//	for each command separated by pipe
+	for (int i = 0; i < delims_pipes; i++) {
+
+//		split sub-command separated by spaces
+		char ** res_space = split_string(res_pipe[i], &delims_spaces);
+
+		for (int j = 0; j < delims_spaces; j++) {
+			Result->CommArray[i].VarList[j] = res_space[i + 1];
 		}
-		res[com_pos - 1] = delim_space;
-		delim_space = strtok (NULL, " ");
+		Result->CommArray[i].command = res_space[0];
+		Result->CommArray[i].VarNum = delims_spaces - 1;
+		free(res_space);
 	}
 
-/* reallocate one extra element for the last NULL */
-	res = realloc (res, sizeof (char*) * (com_pos + 1));
-	res[com_pos] = NULL;
-
-
-	for (i = 0; i < (com_pos); ++i) {
-		Result->CommArray[0].VarList[i] = res[i + 1];
-	}
-	Result->CommArray[0].command = res[0];
-	Result->CommArray[0].VarNum = com_pos - 1;
 
 
 //	print_info(Result);
-	free(res);
-	free(delim_space);
+	free(res_pipe);
+
+//	free(delim_space);
 
 	parse_command(cmdline, &Result->CommArray[0]); /* &Result->CommArray[Result->pipeNum]);*/
 //	free_info(Result);
@@ -91,3 +88,25 @@ void free_info (parseInfo *info) {
 	free(info);
 }
 
+// Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
+char ** split_string(char* cmdline, int* n_delim) {
+	char ** res = NULL;
+	char *  delim_space = strtok (cmdline, "|");
+
+/* split string and append tokens to 'res' */
+	while (delim_space) {
+		res = realloc (res, sizeof (char*) * ++(*n_delim));
+		if (res == NULL) {
+			printf("Error: Memory allocation failed!");
+			exit(-1); /* memory allocation failed */
+		}
+		res[*n_delim - 1] = delim_space;
+		delim_space = strtok (NULL, "|");
+	}
+
+/* reallocate one extra element for the last NULL */
+	res = realloc (res, sizeof (char*) * (*(n_delim) + 1));
+	res[*n_delim] = NULL;
+	free(delim_space);
+	return res;
+}
