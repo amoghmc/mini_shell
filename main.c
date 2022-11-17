@@ -29,6 +29,11 @@ int main() {
 			break;
 
 		parseInfo *result = parse(input);
+		
+		if (result == NULL) {
+			goto end;
+		}
+
 		print_info(result);
 		free_info(result);
 
@@ -54,7 +59,8 @@ int main() {
 //		}
 
 		// Free buffer that was allocated by readline
-		free(input);
+		end:
+			free(input);
 	}
 	return 0;
 }

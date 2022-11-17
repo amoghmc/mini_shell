@@ -44,9 +44,14 @@ parseInfo *parse(char *cmdline) {
 //	check if len of command exceeds MAXLINE
 	if (strlen(cmdline) + 1 > MAXLINE) {
         error_check(NULL, NULL, NULL, 1);
+		return NULL;
 	}
 //	initialize parseInfo struct
 	parseInfo *Result = init_info(Result);
+
+	if(cmdline[strlen(cmdline)-1] == '&') {
+		Result->boolBackground = 1;
+	}
 
 	int delims_pipes, delims_spaces = 0;
 //	splits string separated by pipe delimiter
@@ -54,6 +59,7 @@ parseInfo *parse(char *cmdline) {
 
 	if (delims_pipes > PIPE_MAX_NUM) {
         error_check(Result, res_pipe, NULL, 2);
+		return NULL;
 	}
 	int i;
 
@@ -64,6 +70,7 @@ parseInfo *parse(char *cmdline) {
 
 		if (delims_spaces > MAX_VAR_NUM) {
             error_check(Result, res_pipe, res_space, 3);
+			return NULL;
 		}
 
 //		store individual args of subcommand in var list in struct command type
@@ -98,8 +105,9 @@ void print_info(parseInfo *info) {
 		printf("Background: Yes\n");
 	}
 	else {
-		printf("Background: No");
+		printf("Background: No\n");
 	}
+
 }
 
 void free_info(parseInfo *info) {
@@ -117,7 +125,7 @@ char **split_string(char *cmdline, int *n_delim, char *delim) {
 	while (delim_space) {
 		res = realloc(res, sizeof(char *) * ++(*n_delim));
 		if (res == NULL) {
-			printf("Error: Memory allocation failed!");
+			printf("\nError: Memory allocation failed!");
 			exit(-1); /* memory allocation failed */
 		}
 		res[*n_delim - 1] = delim_space;
@@ -152,5 +160,5 @@ void error_check(parseInfo* info, char** res_pipe, char** res_space, int type) {
             printf("\nError!");
 			break;
     }
-	exit(1);
+	printf("\n");
 }
