@@ -73,14 +73,17 @@ parseInfo *parse(char *cmdline) {
 			return NULL;
 		}
 
-//		store individual args of subcommand in var list in struct command type
+//	for each sub-command separated by space delimiter
 		for (int j = 0; j < delims_spaces; j++) {
-			Result->CommArray[i].VarList[j] = res_space[j + 1];
+//			store individual args of subcommand in var list in struct command type
+			Result->CommArray[i].VarList[j] = res_space[j];
 		}
+		Result->CommArray[i].VarList[delims_spaces] = NULL;
+
 //		store name of subcommand
 		Result->CommArray[i].command = res_space[0];
-//		store total # of args of subcommand
-		Result->CommArray[i].VarNum = delims_spaces - 1;
+//		store total # of args of subcommand + 1 more for NULL
+		Result->CommArray[i].VarNum = delims_spaces + 1;
 		free(res_space);
 	}
 //	store total # of pipes
@@ -111,7 +114,7 @@ void print_info(parseInfo *info) {
 }
 
 void free_info(parseInfo *info) {
-	printf("free_info: freeing memory associated to parseInfo struct\n");
+	printf("\nfree_info: freeing memory associated to parseInfo struct\n");
 	free(info);
 }
 
