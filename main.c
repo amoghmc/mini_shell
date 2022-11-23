@@ -71,7 +71,7 @@ int main() {
 				if (status != 0) {
 					printf("Error! Child exited with error code %d\n", WEXITSTATUS(status));
 //					sleep for 50 milliseconds
-					msleep(50);
+//					msleep(50);
 				}
 			}
 		}
