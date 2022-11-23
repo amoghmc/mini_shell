@@ -5,13 +5,15 @@
 #include <readline/history.h>
 #include <stdbool.h>
 #include <sys/wait.h>
+#include <errno.h>
+#include <time.h>
 #include "parser.c"
 
 
 void print_prompt();
 
 int isBuiltInCommand(char *command);
-
+int msleep(long msec);
 void executeBuiltInCommand(char *command);
 
 void executeCommand(char *command, char *VarList[]);
@@ -28,7 +30,7 @@ int main() {
 	rl_bind_key('\t', rl_complete);
 
 	while (1) {
-		int childPid;
+		int childPid, status;
 
 		// Display prompt and read input
 		print_prompt();
@@ -42,8 +44,7 @@ int main() {
 		parseInfo *result = parse(input);
 
 		if (result == NULL) {
-			printf("GOING TO END\n");
-			goto end;
+			goto free;
 		}
 
 		print_info(result);
@@ -57,27 +58,33 @@ int main() {
 		// Do stuff...
 		if (isBuiltInCommand(input_command->command)) {
 			executeBuiltInCommand(input_command->command);
+			exit(1);
 		}
 		else {
 			childPid = fork();
+
 			if (childPid == 0){
-				printf("executing\n");
-				//calls execvp
-				executeCommand(input_command->command, input_command->VarList);
-//				_exit(0);
+//				calls execvp
+				printf("Executing child process...\n\n");
+				execvp(input_command->command, input_command->VarList);
+				exit(1);
 			}
 			else {
 //				if (isBackgroundJob(cmd)){
 ////					record in list of background jobs
 //				} else {
 
-					waitpid(childPid, 0, 0);
-//				}
+				waitpid(childPid, &status,0);
+				if(status != 0) {
+					printf("Error! Child exited with error code %d\n", WEXITSTATUS(status));
+//					sleep for 50 milliseconds
+					msleep(50);
+				}
 			}
 		}
 
 		// Free buffer that was allocated by readline
-		end:
+		free:
 		free(input);
 		free_info(result);
 	}
@@ -121,10 +128,27 @@ int isBuiltInCommand(char *command) {
 	return NO_SUCH_BUILTIN;
 }
 
-void executeBuiltInCommand(char *cmd) {
+void executeBuiltInCommand(char *command) {
 	exit(0);
 }
 
-void executeCommand(char *command, char *VarList[]) {
-	execvp(command, VarList);
+// Source: https://stackoverflow.com/questions/1157209/is-there-an-alternative-sleep-function-in-c-to-milliseconds
+int msleep(long msec)
+{
+	struct timespec ts;
+	int res;
+	if (msec < 0)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	ts.tv_sec = msec / 1000;
+	ts.tv_nsec = (msec % 1000) * 1000000;
+
+	do {
+		res = nanosleep(&ts, &ts);
+	} while (res && errno == EINTR);
+
+	return res;
 }

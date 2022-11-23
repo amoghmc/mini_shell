@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #include "parse.h"
 
-/* parse - parse a new line 
- *
- * Accepts: nothing
- * Returns: parse information structure
- */
+/*
+ 	* parse - parse a new line
+ 	* Accepts: nothing
+ 	* Returns: parse information structure
+*/
 
 #define MAXLINE 81
 
@@ -41,6 +41,9 @@ void parse_command(char *command, struct commandType *comm) {
 //	cmdline can end either with '\n' or '\0'.
 
 parseInfo *parse(char *cmdline) {
+	if (strpbrk(cmdline, "\t")) {
+		return NULL;
+	}
 //	check if len of command exceeds MAXLINE
 	if (strlen(cmdline) + 1 > MAXLINE) {
         error_check(NULL, NULL, NULL, 1);
