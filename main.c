@@ -7,21 +7,16 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <time.h>
-#include "parser.c"
+#include "parse.h"
+#include "built_in_commands.c"
 
 
-void print_prompt();
+char *print_prompt();
 
-int isBuiltInCommand(char *command);
 int msleep(long msec);
-void executeBuiltInCommand(char *command);
 
 void executeCommand(char *command, char *VarList[]);
 
-enum
-BUILTIN_COMMANDS {
-	NO_SUCH_BUILTIN = 0, EXIT, JOBS
-};
 int MAX_PATH = 1024;
 
 //	Readline template source: https://en.wikipedia.org/wiki/GNU_Readline
@@ -33,9 +28,9 @@ int main() {
 		int childPid, status;
 
 		// Display prompt and read input
-		print_prompt();
+//		print_prompt();
 
-		char *input = readline("");
+		char *input = readline(print_prompt());
 
 		// Check for EOF.
 		if (!input)
@@ -53,29 +48,27 @@ int main() {
 		// Add input to readline history.
 		add_history(input);
 
-		struct commandType* input_command = result->CommArray;
+		struct commandType *input_command = result->CommArray;
 
 		// Do stuff...
 		if (isBuiltInCommand(input_command->command)) {
 			executeBuiltInCommand(input_command->command);
 			exit(1);
-		}
-		else {
+		} else {
 			childPid = fork();
 
-			if (childPid == 0){
+			if (childPid == 0) {
 //				calls execvp
 				printf("Executing child process...\n\n");
 				execvp(input_command->command, input_command->VarList);
 				exit(1);
-			}
-			else {
+			} else {
 //				if (isBackgroundJob(cmd)){
 ////					record in list of background jobs
 //				} else {
 
-				waitpid(childPid, &status,0);
-				if(status != 0) {
+				waitpid(childPid, &status, 0);
+				if (status != 0) {
 					printf("Error! Child exited with error code %d\n", WEXITSTATUS(status));
 //					sleep for 50 milliseconds
 					msleep(50);
@@ -84,61 +77,46 @@ int main() {
 		}
 
 		// Free buffer that was allocated by readline
+		free_info(result);
 		free:
 		free(input);
-		free_info(result);
 	}
 	return 0;
 }
 
 
-void print_prompt() {
+char *print_prompt() {
+	char *buffer;
 	char *cwd, *host = NULL;
 	size_t allocSize = sizeof(char) * MAX_PATH;
 	cwd = (char *) malloc(allocSize);
+	buffer = (char *) malloc(allocSize);
+//	login = (char *) malloc(allocSize);
 
 //	Source: https://stackoverflow.com/questions/8953424/how-to-get-the-username-in-c-c-in-linux
 //	Gets user id
-	printf("%s@", getlogin());
 
 //	Source: https://stackoverflow.com/questions/504810/how-do-i-find-the-current-machines-full-hostname-in-c-hostname-and-domain-info
 //	Gets hostname of machine
 	host = (char *) malloc(allocSize);
 	gethostname(host, allocSize);
-	printf("%s:", host);
 
 //	Source: https://stackoverflow.com/questions/298510/how-to-get-the-current-directory-in-a-c-program
 //	Gets current path of user
 	getcwd(cwd, allocSize);
-	if (getcwd(cwd, allocSize) != NULL) {
-		printf("%s$ ", cwd);
-	} else {
-		perror("getcwd() error");
-	}
 
+	snprintf(buffer, MAX_PATH, "%s@%s@%s$ ", getlogin(), host, cwd);
 	free(cwd);
 	free(host);
+	return buffer;
 }
 
-int isBuiltInCommand(char *command) {
-
-	if (strncmp(command, "exit", strlen("exit")) == 0) {
-		return EXIT;
-	}
-	return NO_SUCH_BUILTIN;
-}
-
-void executeBuiltInCommand(char *command) {
-	exit(0);
-}
 
 // Source: https://stackoverflow.com/questions/1157209/is-there-an-alternative-sleep-function-in-c-to-milliseconds
-int msleep(long msec)
-{
+int msleep(long msec) {
 	struct timespec ts;
 	int res;
-	if (msec < 0)
-	{
+	if (msec < 0) {
 		errno = EINVAL;
 		return -1;
 	}

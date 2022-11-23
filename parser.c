@@ -44,8 +44,12 @@ parseInfo *parse(char *cmdline) {
 	if (strpbrk(cmdline, "\t")) {
 		return NULL;
 	}
+
+	if (strlen(cmdline) < 1)
+		return NULL;
+
 //	check if len of command exceeds MAXLINE
-	if (strlen(cmdline) + 1 > MAXLINE) {
+	if ((strlen(cmdline) + 1 > MAXLINE)) {
         error_check(NULL, NULL, NULL, 1);
 		return NULL;
 	}
