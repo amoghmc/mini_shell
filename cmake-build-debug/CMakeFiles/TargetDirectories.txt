@@ -1,3 +1,0 @@
-/home/amogh/MEGA/MEGAsync/C_Projects/Mini_Shell/cmake-build-debug/CMakeFiles/Mini_Shell.dir
-/home/amogh/MEGA/MEGAsync/C_Projects/Mini_Shell/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/amogh/MEGA/MEGAsync/C_Projects/Mini_Shell/cmake-build-debug/CMakeFiles/rebuild_cache.dir
