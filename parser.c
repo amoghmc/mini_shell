@@ -22,11 +22,6 @@ parseInfo *parse(char *cmdline) {
 	if (strlen(cmdline) < 1)
 		return NULL;
 
-//	check if len of command exceeds MAXLINE
-	if ((strlen(cmdline) + 1 > MAXLINE)) {
-		error_check(NULL, NULL, NULL, 1);
-		return NULL;
-	}
 //	initialize parseInfo struct
 	parseInfo *Result = init_info(Result);
 

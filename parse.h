@@ -1,7 +1,6 @@
 #define MAX_VAR_NUM 10
 #define PIPE_MAX_NUM 10
 #define FILE_MAX_SIZE 40
-#define MAXLINE 81
 
 struct commandType {
 	char *command;
