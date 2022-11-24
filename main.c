@@ -102,7 +102,7 @@ char *print_prompt() {
 //	Gets current path of user
 	getcwd(cwd, allocSize);
 
-	snprintf(buffer, MAX_PATH, "%s@%s@%s$ ", getlogin(), host, cwd);
+	snprintf(buffer, MAX_PATH, "%s@%s:%s$ ", getlogin(), host, cwd);
 	free(cwd);
 	free(host);
 	return buffer;
