@@ -1,0 +1,1 @@
+CMakeLists.txt not found in /home/amogh/MEGAsync/C_Projects/Mini_Shell Select CMakeLists.txt
