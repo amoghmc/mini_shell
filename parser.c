@@ -8,32 +8,6 @@
 #include <stdlib.h>
 #include "parse.h"
 
-/*
- 	* parse - parse a new line
- 	* Accepts: nothing
- 	* Returns: parse information structure
-*/
-
-#define MAXLINE 81
-
-char **split_string(char *cmdline, int *n_delims, char *delim);
-void error_check(parseInfo* info, char** res_pipe, char** res_space, int type);
-
-parseInfo * init_info(parseInfo *info) {
-	printf("init_info: initializing parseInfo\n");
-	info = malloc(sizeof(parseInfo));
-	info->boolBackground = 0;
-	info->boolInfile = 0;
-	info->boolOutfile = 0;
-	return info;
-}
-
-
-void parse_command(char *command, struct commandType *comm) {
-	printf("parse_command: parsing a single command\n");
-}
-
-
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
 //	The members of parseInfo can be seen in parse.h.  Commands are always stored
 //	in the array CommArray. This can accommodate multiple pipes. In commandType,
@@ -50,55 +24,80 @@ parseInfo *parse(char *cmdline) {
 
 //	check if len of command exceeds MAXLINE
 	if ((strlen(cmdline) + 1 > MAXLINE)) {
-        error_check(NULL, NULL, NULL, 1);
+		error_check(NULL, NULL, NULL, 1);
 		return NULL;
 	}
 //	initialize parseInfo struct
 	parseInfo *Result = init_info(Result);
 
-	if(cmdline[strlen(cmdline)-1] == '&') {
+	if (cmdline[strlen(cmdline) - 1] == '&') {
 		Result->boolBackground = 1;
 	}
 
-	int delims_pipes, delims_spaces = 0;
+	int pipe_delims, space_delims = 0;
 //	splits string separated by pipe delimiter
-	char **res_pipe = split_string(cmdline, &delims_pipes, "|");
+	char **res_pipe = split_string(cmdline, &pipe_delims, "|");
 
-	if (delims_pipes > PIPE_MAX_NUM) {
-        error_check(Result, res_pipe, NULL, 2);
+	if (pipe_delims > PIPE_MAX_NUM) {
+		error_check(Result, res_pipe, NULL, 2);
 		return NULL;
 	}
 	int i;
 
 //	for each sub-command separated by pipe delimiter
-	for (i = 0; i < delims_pipes; i++) {
+	for (i = 0; i < pipe_delims; i++) {
 //		split sub-command separated by space delimiter
-		char **res_space = split_string(res_pipe[i], &delims_spaces, " ");
+		char **res_space = split_string(res_pipe[i], &space_delims, " ");
 
-		if (delims_spaces > MAX_VAR_NUM) {
-            error_check(Result, res_pipe, res_space, 3);
+		if (space_delims > MAX_VAR_NUM) {
+			error_check(Result, res_pipe, res_space, 3);
 			return NULL;
 		}
 
-//	for each sub-command separated by space delimiter
-		for (int j = 0; j < delims_spaces; j++) {
-//			store individual args of subcommand in var list in struct command type
-			Result->CommArray[i].VarList[j] = res_space[j];
-		}
-		Result->CommArray[i].VarList[delims_spaces] = NULL;
-
-//		store name of subcommand
-		Result->CommArray[i].command = res_space[0];
-//		store total # of args of subcommand + 1 more for NULL
-		Result->CommArray[i].VarNum = delims_spaces + 1;
+		parse_command(Result, res_space, space_delims, i);
+//
+////	    for each sub-command separated by space delimiter
+//        for (int j = 0; j < space_delims; j++) {
+////			store individual args of subcommand in var list in struct command type
+//            Result->CommArray[i].VarList[j] = res_space[j];
+//        }
+//        Result->CommArray[i].VarList[space_delims] = NULL;
+//
+////		store name of subcommand
+//        Result->CommArray[i].command = res_space[0];
+////		store total # of args of subcommand + 1 more for NULL
+//        Result->CommArray[i].VarNum = space_delims + 1;
 		free(res_space);
 	}
 //	store total # of pipes
 	Result->pipeNum = i;
 	free(res_pipe);
 
-	parse_command(cmdline, &Result->CommArray[Result->pipeNum]);
 	return Result;
+}
+
+parseInfo *init_info(parseInfo *info) {
+	printf("init_info: initializing parseInfo\n");
+	info = malloc(sizeof(parseInfo));
+	info->boolBackground = 0;
+	return info;
+}
+
+void parse_command(parseInfo *Result, char **res_space, int space_delims, int i) {
+	printf("parse_command: parsing a single command\n");
+
+//	for each sub-command separated by space delimiter
+	for (int j = 0; j < space_delims; j++) {
+//			store individual args of subcommand in var list in struct command type
+		Result->CommArray[i].VarList[j] = res_space[j];
+	}
+	Result->CommArray[i].VarList[space_delims] = NULL;
+
+//		store name of subcommand
+	Result->CommArray[i].command = res_space[0];
+//		store total # of args of subcommand + 1 more for NULL
+	Result->CommArray[i].VarNum = space_delims + 1;
+
 }
 
 void print_info(parseInfo *info) {
@@ -113,8 +112,7 @@ void print_info(parseInfo *info) {
 	}
 	if (info->boolBackground) {
 		printf("Background: Yes\n");
-	}
-	else {
+	} else {
 		printf("Background: No\n");
 	}
 
@@ -150,25 +148,25 @@ char **split_string(char *cmdline, int *n_delim, char *delim) {
 }
 
 // prints appropriate error message when called
-void error_check(parseInfo* info, char** res_pipe, char** res_space, int type) {
-    switch (type) {
-        case 1:
-            printf("\nError: command too big to parse!");
+void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
+	switch (type) {
+		case 1:
+			printf("\nError: command too big to parse!");
 			break;
-        case 2:
-            printf("\nError: too many pipes to parse!");
-            free(info);
-            free(res_pipe);
+		case 2:
+			printf("\nError: too many pipes to parse!");
+			free(info);
+			free(res_pipe);
 			break;
-        case 3:
-            printf("\nError: too many arguments for a single command to parse!");
-            free(info);
-            free(res_pipe);
-            free(res_space);
+		case 3:
+			printf("\nError: too many arguments for a single command to parse!");
+			free(info);
+			free(res_pipe);
+			free(res_space);
 			break;
-        default:
-            printf("\nError!");
+		default:
+			printf("\nError!");
 			break;
-    }
+	}
 	printf("\n");
 }

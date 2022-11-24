@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <time.h>
 #include "parse.h"
-#include "built_in_commands.c"
+#include "builtIn.h"
 
 
 char *print_prompt();
@@ -68,7 +68,6 @@ int main() {
 				waitpid(childPid, &status, 0);
 				if (status != 0) {
 					printf("Error! Child exited with error code %d\n", WEXITSTATUS(status));
-//					sleep for 50 milliseconds
 				}
 			}
 		}

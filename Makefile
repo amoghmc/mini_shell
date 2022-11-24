@@ -4,7 +4,10 @@ DEBUG=-g
 
 all: shell
 
-shell: main.c parser.c parse.h
+shell: main.c parser.c parse.h builtInCommands.c builtIn.h
 	gcc $(DEBUG) main.c parser.c -o shell $(CFLAGS)
 clean:
 	rm -f shell *~
+
+target:
+	./shell
