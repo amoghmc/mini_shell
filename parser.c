@@ -55,18 +55,6 @@ parseInfo *parse(char *cmdline) {
 		}
 
 		parse_command(Result, res_space, space_delims, i);
-//
-////	    for each sub-command separated by space delimiter
-//        for (int j = 0; j < space_delims; j++) {
-////			store individual args of subcommand in var list in struct command type
-//            Result->CommArray[i].VarList[j] = res_space[j];
-//        }
-//        Result->CommArray[i].VarList[space_delims] = NULL;
-//
-////		store name of subcommand
-//        Result->CommArray[i].command = res_space[0];
-////		store total # of args of subcommand + 1 more for NULL
-//        Result->CommArray[i].VarNum = space_delims + 1;
 		free(res_space);
 	}
 //	store total # of pipes
@@ -88,14 +76,14 @@ void parse_command(parseInfo *Result, char **res_space, int space_delims, int i)
 
 //	for each sub-command separated by space delimiter
 	for (int j = 0; j < space_delims; j++) {
-//			store individual args of subcommand in var list in struct command type
+//		store individual args of subcommand in var list in struct command type
 		Result->CommArray[i].VarList[j] = res_space[j];
 	}
 	Result->CommArray[i].VarList[space_delims] = NULL;
 
-//		store name of subcommand
+//	store name of subcommand
 	Result->CommArray[i].command = res_space[0];
-//		store total # of args of subcommand + 1 more for NULL
+//	store total # of args of subcommand + 1 more for NULL
 	Result->CommArray[i].VarNum = space_delims + 1;
 
 }
