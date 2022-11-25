@@ -2,3 +2,5 @@ a.out
 shell
 .idea
 cmake-build-debug
+CMakeLists.txt
+*.txt

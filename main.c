@@ -64,9 +64,9 @@ int main() {
 //				int fd = open("two.txt", O_WRONLY |O_TRUNC | O_CREAT);
 //				dup2(fd, STDIN_FILENO);
 //
-//				execvp(input_command->command, input_command->VarList);
-//				fprintf(stderr, "Failed to execute 'wc'\n");
-//				exit(1);
+				execvp(input_command->command, input_command->VarList);
+				fprintf(stderr, "Failed to execute command!\n");
+				exit(1);
 			} else {
 //				if (isBackgroundJob(cmd)){
 ////					record in list of background jobs
