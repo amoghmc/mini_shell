@@ -1,13 +1,14 @@
 #define MAX_VAR_NUM 10
 #define PIPE_MAX_NUM 10
 #define FILE_MAX_SIZE 40
+#define MAX_LINE 81
 
 struct commandType {
 	char *command;
 	char *VarList[MAX_VAR_NUM];
 	int VarNum;
-    char inFile[FILE_MAX_SIZE];
-    char outFile[FILE_MAX_SIZE];
+    char *inFile;
+    char *outFile;
     int boolInfile;
     int boolOutfile;
 };
@@ -26,7 +27,7 @@ void free_info(parseInfo *);
 
 void print_info(parseInfo *);
 
-void parse_command(parseInfo *Result, char **res_space, int space_delims, int i);
+void parse_command(struct commandType* result, char* cmd, char **res_space, int space_delims);
 
 char **split_string(char *cmdline, int *n_delims, char *delim);
 

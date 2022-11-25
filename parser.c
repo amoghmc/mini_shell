@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "parse.h"
 
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
@@ -31,10 +32,10 @@ parseInfo *parse(char *cmdline) {
 
 	int pipe_delims, space_delims = 0;
 //	splits string separated by pipe delimiter
-	char **res_pipe = split_string(cmdline, &pipe_delims, "|");
+	char **result_pipe = split_string(cmdline, &pipe_delims, "|");
 
 	if (pipe_delims > PIPE_MAX_NUM) {
-		error_check(Result, res_pipe, NULL, 2);
+		error_check(Result, result_pipe, NULL, 2);
 		return NULL;
 	}
 	int i;
@@ -42,19 +43,21 @@ parseInfo *parse(char *cmdline) {
 //	for each sub-command separated by pipe delimiter
 	for (i = 0; i < pipe_delims; i++) {
 //		split sub-command separated by space delimiter
-		char **res_space = split_string(res_pipe[i], &space_delims, " ");
+
+		char *cmd_copy = strdup(result_pipe[i]);
+		char **result_space = split_string(result_pipe[i], &space_delims, " ");
 
 		if (space_delims > MAX_VAR_NUM) {
-			error_check(Result, res_pipe, res_space, 3);
+			error_check(Result, result_pipe, result_space, 3);
 			return NULL;
 		}
 
-		parse_command(Result, res_space, space_delims, i);
-		free(res_space);
+		parse_command(&Result->CommArray[i], cmd_copy, result_space, space_delims);
+		free(result_space);
 	}
 //	store total # of pipes
 	Result->pipeNum = i;
-	free(res_pipe);
+	free(result_pipe);
 
 	return Result;
 }
@@ -66,34 +69,77 @@ parseInfo *init_info(parseInfo *info) {
 	return info;
 }
 
-void parse_command(parseInfo *Result, char **res_space, int space_delims, int i) {
+void parse_command(struct commandType *result, char* cmd, char **res_space, int space_delims) {
 	printf("parse_command: parsing a single command\n");
 
 //	for each sub-command separated by space delimiter
 	int j = 0;
-	while (j < space_delims) {
-//		store individual args of subcommand in var list in struct command type
-		Result->CommArray[i].VarList[j] = res_space[j];
-//		TODO
-		if (strcmp(res_space[j], ">") == 0) {
-			stpcpy(res_space[j + 1], Result->CommArray[i].outFile);
-			Result->CommArray[i].boolOutfile = j;
-			j++;
-		}
-		else if (strcmp(res_space[j], "<") == 0) {
-			stpcpy(res_space[j + 1], Result->CommArray[i].inFile);
-			Result->CommArray[i].boolInfile = j;
-			j++;
-		}
-		j++;
+	if (strstr(cmd, ">") != NULL) {
+		result->boolOutfile = true;
 	}
-	Result->CommArray[i].VarList[space_delims] = NULL;
+	if (strstr(cmd, "<") != NULL) {
+		result->boolInfile = true;
+	}
+	free(cmd);
 
-//	store name of subcommand
-	Result->CommArray[i].command = res_space[0];
-//	store total # of args of subcommand + 1 more for NULL
-	Result->CommArray[i].VarNum = space_delims + 1;
-
+//	both are not present
+	if ((!result->boolOutfile) && (!result->boolInfile)) {
+		for (int i = 0; i < space_delims; i++) {
+			result->VarList[i] = res_space[i];
+		}
+//		end arr with NULL for execvp
+		result->VarList[space_delims] = NULL;
+//		store name of subcommand
+		result->command = res_space[0];
+//		store total # of args of subcommand + 1 more for NULL
+		result->VarNum = space_delims + 1;
+	}
+//	< is present
+	else if ((!result->boolOutfile) && (result->boolInfile)) {
+		result->VarNum = 0;
+		int displacement = 0;
+		while (j < space_delims) {
+			if (strcmp(res_space[j], "<") == 0) {
+				result->inFile = strdup(res_space[j + 1]);
+				result->boolInfile = j;
+				j++;
+				displacement -= 2;
+			}
+			else {
+				result->VarList[j + displacement] = res_space[j];
+			}
+			j++;
+		}
+//		end arr with NULL for execvp
+		result->VarList[space_delims + displacement] = NULL;
+//		store name of subcommand
+		result->command = res_space[0];
+//		store total # of args of subcommand + 1 more for NULL
+		result->VarNum = space_delims + displacement + 1;
+	}
+//	> is present
+	else if ((result->boolOutfile) && (!result->boolInfile)) {
+		result->VarNum = 0;
+		int displacement = 0;
+		while (j < space_delims) {
+			if (strcmp(res_space[j], ">") == 0) {
+				result->outFile = strdup(res_space[j + 1]);
+				result->boolOutfile = j;
+				j++;
+				displacement -= 2;
+			}
+			else {
+				result->VarList[j + displacement] = res_space[j];
+			}
+			j++;
+		}
+//		end arr with NULL for execvp
+		result->VarList[space_delims + displacement] = NULL;
+//		store name of subcommand
+		result->command = res_space[0];
+//		store total # of args of subcommand + 1 more for NULL
+		result->VarNum = space_delims + displacement + 1;
+	}
 }
 
 void print_info(parseInfo *info) {
@@ -102,6 +148,12 @@ void print_info(parseInfo *info) {
 //	for each command separated by pipe
 	for (int i = 0; i < info->pipeNum; i++) {
 		printf("Command[%d]: %s\n", i, info->CommArray[i].command);
+		if (info->CommArray[i].boolInfile) {
+			printf("Infile: %s\n", info->CommArray[i].inFile);
+		}
+		if (info->CommArray[i].boolOutfile) {
+			printf("Outfile: %s\n", info->CommArray[i].outFile);
+		}
 		for (int k = 0; k < info->CommArray[i].VarNum; k++) {
 			printf("Arg[%d]: %s\n", k, info->CommArray[i].VarList[k]);
 		}
@@ -121,26 +173,26 @@ void free_info(parseInfo *info) {
 
 // Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
 char **split_string(char *cmdline, int *n_delim, char *delim) {
-	char **res = NULL;
+	char **result = NULL;
 	char *delim_space = strtok(cmdline, delim);
 	*n_delim = 0;
 
-/* split string and append tokens to 'res' */
+/* split string and append tokens to 'result' */
 	while (delim_space) {
-		res = realloc(res, sizeof(char *) * ++(*n_delim));
-		if (res == NULL) {
+		result = realloc(result, sizeof(char *) * ++(*n_delim));
+		if (result == NULL) {
 			printf("\nError: Memory allocation failed!");
 			exit(-1); /* memory allocation failed */
 		}
-		res[*n_delim - 1] = delim_space;
+		result[*n_delim - 1] = delim_space;
 		delim_space = strtok(NULL, delim);
 	}
 
 /* reallocate one extra element for the last NULL */
-	res = realloc(res, sizeof(char *) * (*(n_delim) + 1));
-	res[*n_delim] = NULL;
+	result = realloc(result, sizeof(char *) * (*(n_delim) + 1));
+	result[*n_delim] = NULL;
 	free(delim_space);
-	return res;
+	return result;
 }
 
 // prints appropriate error message when called

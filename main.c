@@ -47,7 +47,7 @@ int main() {
 		// Add input to readline history.
 		add_history(input);
 
-		struct commandType *input_command = result->CommArray;
+		struct commandType *input_command = &result->CommArray[0];
 
 //		execute builtin command in parent process
 		if (isBuiltInCommand(input_command->command)) {
@@ -60,13 +60,30 @@ int main() {
 			if (childPid == 0) {
 //				calls execvp
 				printf("Executing child process...\n\n");
-//				TODO
-//				int fd = open("two.txt", O_WRONLY |O_TRUNC | O_CREAT);
-//				dup2(fd, STDIN_FILENO);
-//
-				execvp(input_command->command, input_command->VarList);
-				fprintf(stderr, "Failed to execute command!\n");
-				exit(1);
+				if (!input_command->boolInfile && !input_command->boolOutfile) {
+					printf("1");
+					execvp(input_command->command, input_command->VarList);
+					printf("Failed to execute command!\n");
+					exit(1);
+				}
+				else if (input_command->boolInfile) {
+					printf("2");
+					int fd = open(input_command->inFile, O_RDONLY);
+					dup2(fd, STDIN_FILENO);
+					free(input_command->inFile);
+					execvp(input_command->command, input_command->VarList);
+					printf("Failed to execute command!\n");
+					exit(1);
+				}
+				else {
+					int fd = open(input_command->outFile, O_CREAT | O_WRONLY | O_TRUNC);
+					printf("3");
+					dup2(fd, STDOUT_FILENO);
+					free(input_command->outFile);
+					execvp(input_command->command, input_command->VarList);
+					printf("Failed to execute command!\n");
+					exit(1);
+				}
 			} else {
 //				if (isBackgroundJob(cmd)){
 ////					record in list of background jobs
