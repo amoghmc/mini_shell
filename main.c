@@ -29,7 +29,9 @@ int main() {
 		// Display prompt and read input
 //		print_prompt();
 
-		char *input = readline(print_prompt());
+		char* buffer = print_prompt();
+		char *input = readline(buffer);
+		free(buffer);
 
 		// Check for EOF.
 		if (!input)
@@ -44,7 +46,7 @@ int main() {
 		print_info(result);
 
 
-		// Add input to readline history.
+//		add input to readline history.
 		add_history(input);
 
 		struct commandType *input_command = &result->CommArray[0];
