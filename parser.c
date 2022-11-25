@@ -70,9 +70,22 @@ void parse_command(parseInfo *Result, char **res_space, int space_delims, int i)
 	printf("parse_command: parsing a single command\n");
 
 //	for each sub-command separated by space delimiter
-	for (int j = 0; j < space_delims; j++) {
+	int j = 0;
+	while (j < space_delims) {
 //		store individual args of subcommand in var list in struct command type
 		Result->CommArray[i].VarList[j] = res_space[j];
+//		TODO
+		if (strcmp(res_space[j], ">") == 0) {
+			stpcpy(res_space[j + 1], Result->CommArray[i].outFile);
+			Result->CommArray[i].boolOutfile = j;
+			j++;
+		}
+		else if (strcmp(res_space[j], "<") == 0) {
+			stpcpy(res_space[j + 1], Result->CommArray[i].inFile);
+			Result->CommArray[i].boolInfile = j;
+			j++;
+		}
+		j++;
 	}
 	Result->CommArray[i].VarList[space_delims] = NULL;
 

@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <time.h>
+#include <fcntl.h>
 #include "parse.h"
 #include "builtIn.h"
 
@@ -48,18 +49,24 @@ int main() {
 
 		struct commandType *input_command = result->CommArray;
 
-		// Do stuff...
+//		execute builtin command in parent process
 		if (isBuiltInCommand(input_command->command)) {
 			executeBuiltInCommand(input_command->command);
-			exit(1);
-		} else {
+		}
+		else {
+//			create a child process to execute command
 			childPid = fork();
 
 			if (childPid == 0) {
 //				calls execvp
 				printf("Executing child process...\n\n");
-				execvp(input_command->command, input_command->VarList);
-				exit(1);
+//				TODO
+//				int fd = open("two.txt", O_WRONLY |O_TRUNC | O_CREAT);
+//				dup2(fd, STDIN_FILENO);
+//
+//				execvp(input_command->command, input_command->VarList);
+//				fprintf(stderr, "Failed to execute 'wc'\n");
+//				exit(1);
 			} else {
 //				if (isBackgroundJob(cmd)){
 ////					record in list of background jobs
