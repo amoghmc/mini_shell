@@ -3,10 +3,7 @@
 #include <unistd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <stdbool.h>
 #include <sys/wait.h>
-#include <errno.h>
-#include <time.h>
 #include <fcntl.h>
 #include "parse.h"
 #include "builtIn.h"
@@ -27,9 +24,7 @@ int main() {
 		int childPid, status;
 
 		// Display prompt and read input
-//		print_prompt();
-
-		char* buffer = print_prompt();
+		char *buffer = print_prompt();
 		char *input = readline(buffer);
 		free(buffer);
 
@@ -38,14 +33,11 @@ int main() {
 			break;
 
 		parseInfo *result = parse(input);
-
 		if (result == NULL) {
 			goto free;
 		}
 
 		print_info(result);
-
-
 //		add input to readline history.
 		add_history(input);
 
@@ -54,38 +46,25 @@ int main() {
 //		execute builtin command in parent process
 		if (isBuiltInCommand(input_command->command)) {
 			executeBuiltInCommand(input_command->command);
-		}
-		else {
+		} else {
 //			create a child process to execute command
 			childPid = fork();
-
 			if (childPid == 0) {
 //				calls execvp
 				printf("Executing child process...\n\n");
 				if (!input_command->boolInfile && !input_command->boolOutfile) {
-					printf("1");
 					execvp(input_command->command, input_command->VarList);
-					printf("Failed to execute command!\n");
-					exit(1);
-				}
-				else if (input_command->boolInfile) {
-					printf("2");
+				} else if (input_command->boolInfile) {
 					int fd = open(input_command->inFile, O_RDONLY);
 					dup2(fd, STDIN_FILENO);
-					free(input_command->inFile);
 					execvp(input_command->command, input_command->VarList);
-					printf("Failed to execute command!\n");
-					exit(1);
-				}
-				else {
-					int fd = open(input_command->outFile, O_CREAT | O_WRONLY | O_TRUNC);
-					printf("3");
+				} else {
+					int fd = open(input_command->outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 					dup2(fd, STDOUT_FILENO);
-					free(input_command->outFile);
 					execvp(input_command->command, input_command->VarList);
-					printf("Failed to execute command!\n");
-					exit(1);
 				}
+				printf("Failed to execute command!\n");
+				exit(1);
 			} else {
 //				if (isBackgroundJob(cmd)){
 ////					record in list of background jobs

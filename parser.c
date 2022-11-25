@@ -69,7 +69,7 @@ parseInfo *init_info(parseInfo *info) {
 	return info;
 }
 
-void parse_command(struct commandType *result, char* cmd, char **res_space, int space_delims) {
+void parse_command(struct commandType *result, char *cmd, char **res_space, int space_delims) {
 	printf("parse_command: parsing a single command\n");
 
 //	for each sub-command separated by space delimiter
@@ -100,12 +100,14 @@ void parse_command(struct commandType *result, char* cmd, char **res_space, int 
 		int displacement = 0;
 		while (j < space_delims) {
 			if (strcmp(res_space[j], "<") == 0) {
+				if (result->inFile != NULL) {
+					free(result->inFile);
+				}
 				result->inFile = strdup(res_space[j + 1]);
 				result->boolInfile = j;
 				j++;
 				displacement -= 2;
-			}
-			else {
+			} else {
 				result->VarList[j + displacement] = res_space[j];
 			}
 			j++;
@@ -123,12 +125,14 @@ void parse_command(struct commandType *result, char* cmd, char **res_space, int 
 		int displacement = 0;
 		while (j < space_delims) {
 			if (strcmp(res_space[j], ">") == 0) {
+				if (result->outFile != NULL) {
+					free(result->outFile);
+				}
 				result->outFile = strdup(res_space[j + 1]);
 				result->boolOutfile = j;
 				j++;
 				displacement -= 2;
-			}
-			else {
+			} else {
 				result->VarList[j + displacement] = res_space[j];
 			}
 			j++;
@@ -168,6 +172,14 @@ void print_info(parseInfo *info) {
 
 void free_info(parseInfo *info) {
 	printf("\nfree_info: freeing memory associated to parseInfo struct\n");
+	for (int i = 0; i < info->pipeNum; i++) {
+		if (info->CommArray->inFile != NULL) {
+			free(info->CommArray->inFile);
+		}
+		if (info->CommArray->outFile != NULL) {
+			free(info->CommArray->outFile);
+		}
+	}
 	free(info);
 }
 

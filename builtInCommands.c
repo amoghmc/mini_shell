@@ -4,7 +4,6 @@
 #include "builtIn.h"
 
 int isBuiltInCommand(char *command) {
-
 	if (strncmp(command, "exit", strlen("exit")) == 0) {
 		return EXIT;
 	}
