@@ -26,7 +26,9 @@ int main() {
 		// Display prompt and read input
 		char *buffer = print_prompt();
 		char *input = readline(buffer);
-		free_and_null(buffer)
+		if (buffer != NULL) {
+			free_and_null(buffer)
+		}
 
 		// Check for EOF.
 		if (!input)
@@ -81,7 +83,10 @@ int main() {
 		// Free buffer that was allocated by readline
 		free_info(result);
 		free:
-		free_and_null(input)
+		if (input != NULL) {
+			free_and_null(input)
+		}
+
 	}
 	return 0;
 }

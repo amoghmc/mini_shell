@@ -87,12 +87,12 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 //	both are not present
 	if ((!result->boolOutfile) && (!result->boolInfile)) {
 		for (int i = 0; i < space_delims; i++) {
-			result->VarList[i] = res_space[i];
+			result->VarList[i] = strdup(res_space[i]);
 		}
 //		end arr with NULL for execvp
 		result->VarList[space_delims] = NULL;
 //		store name of subcommand
-		result->command = res_space[0];
+		result->command = strdup(res_space[0]);
 //		store total # of args of subcommand + 1 more for NULL
 		result->VarNum = space_delims + 1;
 	}
@@ -110,14 +110,14 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 				j++;
 				displacement -= 2;
 			} else {
-				result->VarList[j + displacement] = res_space[j];
+				result->VarList[j + displacement] = strdup(res_space[j]);
 			}
 			j++;
 		}
 //		end arr with NULL for execvp
 		result->VarList[space_delims + displacement] = NULL;
 //		store name of subcommand
-		result->command = res_space[0];
+		result->command = strdup(res_space[0]);
 //		store total # of args of subcommand + 1 more for NULL
 		result->VarNum = space_delims + displacement + 1;
 	}
@@ -135,14 +135,14 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 				j++;
 				displacement -= 2;
 			} else {
-				result->VarList[j + displacement] = res_space[j];
+				result->VarList[j + displacement] = strdup(res_space[j]);
 			}
 			j++;
 		}
 //		end arr with NULL for execvp
 		result->VarList[space_delims + displacement] = NULL;
 //		store name of subcommand
-		result->command = res_space[0];
+		result->command = strdup(res_space[0]);
 //		store total # of args of subcommand + 1 more for NULL
 		result->VarNum = space_delims + displacement + 1;
 	}
@@ -175,14 +175,24 @@ void print_info(parseInfo *info) {
 void free_info(parseInfo *info) {
 	printf("\nfree_info: freeing memory associated to parseInfo struct\n");
 	for (int i = 0; i < info->pipeNum; i++) {
+		for (int j = 0; j < info->CommArray[i].VarNum; j++) {
+			if (info->CommArray[i].VarList[j] != NULL) {
+				free_and_null(info->CommArray[i].VarList[j])
+			}
+		}
 		if (info->CommArray[i].inFile != NULL) {
 			free_and_null(info->CommArray[i].inFile)
 		}
 		if (info->CommArray[i].outFile != NULL) {
 			free_and_null(info->CommArray[i].outFile)
 		}
+		if (info->CommArray[i].command != NULL) {
+			free_and_null(info->CommArray[i].command)
+		}
 	}
-	free_and_null(info)
+	if (info != NULL) {
+		free_and_null(info)
+	}
 }
 
 // Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
