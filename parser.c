@@ -53,14 +53,11 @@ parseInfo *parse(char *cmdline) {
 		}
 
 		parse_command(&Result->CommArray[i], cmd_copy, result_space, space_delims);
-		free(result_space);
-		result_space = NULL;
+		free_and_null(result_space)
 	}
 //	store total # of pipes
 	Result->pipeNum = i;
-	free(result_pipe);
-	result_pipe = NULL;
-
+	free_and_null(result_pipe)
 	return Result;
 }
 
@@ -106,8 +103,7 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 		while (j < space_delims) {
 			if (strcmp(res_space[j], "<") == 0) {
 				if (result->inFile != NULL) {
-					free(result->inFile);
-					result->inFile = NULL;
+					free_and_null(result->inFile)
 				}
 				result->inFile = strdup(res_space[j + 1]);
 				result->boolInfile = j;
@@ -132,8 +128,7 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 		while (j < space_delims) {
 			if (strcmp(res_space[j], ">") == 0) {
 				if (result->outFile != NULL) {
-					free(result->outFile);
-					result->outFile = NULL;
+					free_and_null(result->outFile)
 				}
 				result->outFile = strdup(res_space[j + 1]);
 				result->boolOutfile = j;
@@ -180,17 +175,14 @@ void print_info(parseInfo *info) {
 void free_info(parseInfo *info) {
 	printf("\nfree_info: freeing memory associated to parseInfo struct\n");
 	for (int i = 0; i < info->pipeNum; i++) {
-		if (info->CommArray->inFile != NULL) {
-			free(info->CommArray->inFile);
-			info->CommArray->inFile = NULL;
+		if (info->CommArray[i].inFile != NULL) {
+			free_and_null(info->CommArray[i].inFile)
 		}
-		if (info->CommArray->outFile != NULL) {
-			free(info->CommArray->outFile);
-			info->CommArray->outFile = NULL;
+		if (info->CommArray[i].outFile != NULL) {
+			free_and_null(info->CommArray[i].outFile)
 		}
 	}
-	free(info);
-	info = NULL;
+	free_and_null(info)
 }
 
 // Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
@@ -213,8 +205,7 @@ char **split_string(char *cmdline, int *n_delim, char *delim) {
 /* reallocate one extra element for the last NULL */
 	result = realloc(result, sizeof(char *) * (*(n_delim) + 1));
 	result[*n_delim] = NULL;
-	free(delim_space);
-	delim_space = NULL;
+	free_and_null(delim_space)
 	return result;
 }
 
@@ -226,19 +217,14 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 			break;
 		case 2:
 			printf("\nError: too many pipes to parse!");
-			free(info);
-			info = NULL;
-			free(res_pipe);
-			res_pipe = NULL;
+			free_and_null(info)
+			free_and_null(res_pipe)
 			break;
 		case 3:
 			printf("\nError: too many arguments for a single command to parse!");
-			free(info);
-			info = NULL;
-			free(res_pipe);
-			res_pipe = NULL;
-			free(res_space);
-			res_space = NULL;
+			free_and_null(info)
+			free_and_null(res_pipe)
+			free_and_null(res_space)
 			break;
 		default:
 			printf("\nError!");

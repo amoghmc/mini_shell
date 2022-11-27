@@ -2,6 +2,7 @@
 #define PIPE_MAX_NUM 10
 #define FILE_MAX_SIZE 40
 #define MAX_LINE 81
+#define free_and_null(x) free(x); x = NULL;
 
 struct commandType {
 	char *command;

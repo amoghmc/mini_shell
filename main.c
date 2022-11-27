@@ -26,8 +26,7 @@ int main() {
 		// Display prompt and read input
 		char *buffer = print_prompt();
 		char *input = readline(buffer);
-		free(buffer);
-		buffer = NULL;
+		free_and_null(buffer)
 
 		// Check for EOF.
 		if (!input)
@@ -82,8 +81,7 @@ int main() {
 		// Free buffer that was allocated by readline
 		free_info(result);
 		free:
-		free(input);
-		input = NULL;
+		free_and_null(input)
 	}
 	return 0;
 }
@@ -110,9 +108,7 @@ char *print_prompt() {
 	getcwd(cwd, allocSize);
 
 	snprintf(buffer, MAX_PATH, "%s@%s:%s$ ", getlogin(), host, cwd);
-	free(cwd);
-	cwd = NULL;
-	free(host);
-	host = NULL;
+	free_and_null(cwd)
+	free_and_null(host)
 	return buffer;
 }
