@@ -54,10 +54,12 @@ parseInfo *parse(char *cmdline) {
 
 		parse_command(&Result->CommArray[i], cmd_copy, result_space, space_delims);
 		free(result_space);
+		result_space = NULL;
 	}
 //	store total # of pipes
 	Result->pipeNum = i;
 	free(result_pipe);
+	result_pipe = NULL;
 
 	return Result;
 }
@@ -65,7 +67,7 @@ parseInfo *parse(char *cmdline) {
 parseInfo *init_info(parseInfo *info) {
 	printf("init_info: initializing parseInfo\n");
 	info = malloc(sizeof(parseInfo));
-	info->boolBackground = 0;
+	info->boolBackground = false;
 	return info;
 }
 
@@ -74,6 +76,8 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 
 //	for each sub-command separated by space delimiter
 	int j = 0;
+	result->boolInfile = false;
+	result->boolOutfile = false;
 	if (strstr(cmd, ">") != NULL) {
 		result->boolOutfile = true;
 	}
@@ -81,6 +85,7 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 		result->boolInfile = true;
 	}
 	free(cmd);
+	cmd = NULL;
 
 //	both are not present
 	if ((!result->boolOutfile) && (!result->boolInfile)) {
@@ -102,6 +107,7 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 			if (strcmp(res_space[j], "<") == 0) {
 				if (result->inFile != NULL) {
 					free(result->inFile);
+					result->inFile = NULL;
 				}
 				result->inFile = strdup(res_space[j + 1]);
 				result->boolInfile = j;
@@ -127,6 +133,7 @@ void parse_command(struct commandType *result, char *cmd, char **res_space, int 
 			if (strcmp(res_space[j], ">") == 0) {
 				if (result->outFile != NULL) {
 					free(result->outFile);
+					result->outFile = NULL;
 				}
 				result->outFile = strdup(res_space[j + 1]);
 				result->boolOutfile = j;
@@ -175,12 +182,15 @@ void free_info(parseInfo *info) {
 	for (int i = 0; i < info->pipeNum; i++) {
 		if (info->CommArray->inFile != NULL) {
 			free(info->CommArray->inFile);
+			info->CommArray->inFile = NULL;
 		}
 		if (info->CommArray->outFile != NULL) {
 			free(info->CommArray->outFile);
+			info->CommArray->outFile = NULL;
 		}
 	}
 	free(info);
+	info = NULL;
 }
 
 // Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
@@ -204,6 +214,7 @@ char **split_string(char *cmdline, int *n_delim, char *delim) {
 	result = realloc(result, sizeof(char *) * (*(n_delim) + 1));
 	result[*n_delim] = NULL;
 	free(delim_space);
+	delim_space = NULL;
 	return result;
 }
 
@@ -216,13 +227,18 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 		case 2:
 			printf("\nError: too many pipes to parse!");
 			free(info);
+			info = NULL;
 			free(res_pipe);
+			res_pipe = NULL;
 			break;
 		case 3:
 			printf("\nError: too many arguments for a single command to parse!");
 			free(info);
+			info = NULL;
 			free(res_pipe);
+			res_pipe = NULL;
 			free(res_space);
+			res_space = NULL;
 			break;
 		default:
 			printf("\nError!");

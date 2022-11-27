@@ -27,6 +27,7 @@ int main() {
 		char *buffer = print_prompt();
 		char *input = readline(buffer);
 		free(buffer);
+		buffer = NULL;
 
 		// Check for EOF.
 		if (!input)
@@ -64,6 +65,7 @@ int main() {
 					execvp(input_command->command, input_command->VarList);
 				}
 				printf("Failed to execute command!\n");
+				free_info(result);
 				exit(1);
 			} else {
 //				if (isBackgroundJob(cmd)){
@@ -81,6 +83,7 @@ int main() {
 		free_info(result);
 		free:
 		free(input);
+		input = NULL;
 	}
 	return 0;
 }
@@ -108,6 +111,8 @@ char *print_prompt() {
 
 	snprintf(buffer, MAX_PATH, "%s@%s:%s$ ", getlogin(), host, cwd);
 	free(cwd);
+	cwd = NULL;
 	free(host);
+	host = NULL;
 	return buffer;
 }
