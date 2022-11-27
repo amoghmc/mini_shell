@@ -43,7 +43,7 @@ int main() {
 //		add input to readline history.
 		add_history(input);
 
-		struct commandType *input_command = &result->CommArray[0];
+		commandType *input_command = &result->CommArray[0];
 
 //		execute builtin command in parent process
 		if (isBuiltInCommand(input_command->command)) {

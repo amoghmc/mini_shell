@@ -4,7 +4,7 @@
 #define MAX_LINE 81
 #define free_and_null(x) free(x); x = NULL;
 
-struct commandType {
+typedef struct {
 	char *command;
 	char *VarList[MAX_VAR_NUM];
 	int VarNum;
@@ -12,13 +12,13 @@ struct commandType {
 	char *outFile;
 	int boolInfile;
 	int boolOutfile;
-};
+} commandType;
 
 /* parsing information structure */
 typedef struct {
 //	run process in background
 	int boolBackground;
-	struct commandType CommArray[PIPE_MAX_NUM];
+	commandType CommArray[PIPE_MAX_NUM];
 	int pipeNum;
 } parseInfo;
 
@@ -29,7 +29,7 @@ void free_info(parseInfo *);
 
 void print_info(parseInfo *);
 
-void parse_command(struct commandType *result, char *cmd, char **res_space, int space_delims);
+void parse_command(commandType *result, char *cmd, char **res_space, int space_delims);
 
 char **split_string(char *cmdline, int *n_delims, char *delim);
 

@@ -64,11 +64,22 @@ parseInfo *parse(char *cmdline) {
 parseInfo *init_info(parseInfo *info) {
 	printf("init_info: initializing parseInfo\n");
 	info = malloc(sizeof(parseInfo));
+
+	for (int i = 0; i < PIPE_MAX_NUM; i++) {
+		commandType command;
+		command.inFile = NULL;
+		command.outFile = NULL;
+		command.command = NULL;
+		for (int j = 0; j < MAX_VAR_NUM; j++) {
+			command.VarList[j] = NULL;
+		}
+		info->CommArray[i] = command;
+	}
 	info->boolBackground = false;
 	return info;
 }
 
-void parse_command(struct commandType *result, char *cmd, char **res_space, int space_delims) {
+void parse_command(commandType *result, char *cmd, char **res_space, int space_delims) {
 	printf("parse_command: parsing a single command\n");
 
 //	for each sub-command separated by space delimiter
