@@ -5,8 +5,8 @@
 #include <readline/history.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include "parse.h"
 #include "builtIn.h"
+#include "parse.h"
 
 
 char *print_prompt();
@@ -46,8 +46,9 @@ int main() {
 		commandType *input_command = &result->CommArray[0];
 
 //		execute builtin command in parent process
-		if (isBuiltInCommand(input_command->command)) {
-			executeBuiltInCommand(input_command->command);
+		int commType = isBuiltInCommand(input_command->command);
+		if (commType) {
+			executeBuiltInCommand(input_command, commType);
 		} else {
 //			create a child process to execute command
 			childPid = fork();
@@ -79,6 +80,7 @@ int main() {
 				}
 			}
 		}
+		printf("2323");
 
 		// Free buffer that was allocated by readline
 		free_info(result);

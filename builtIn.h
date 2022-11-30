@@ -1,7 +1,12 @@
-int isBuiltInCommand(char *command);
-void executeBuiltInCommand(char *command);
+// header guards to prevent double inclusion
+#ifndef BUILTIN_H
+#define BUILTIN_H
 
-enum
-BUILTIN_COMMANDS {
-	NO_SUCH_BUILTIN = 0, EXIT, CD, HISTORY, JOBS
-};
+#include "parse.h"
+
+int isBuiltInCommand(char *command);
+void executeBuiltInCommand(commandType *command, int type);
+
+extern char * builtInArray[];
+
+#endif

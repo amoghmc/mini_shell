@@ -24,7 +24,8 @@ parseInfo *parse(char *cmdline) {
 		return NULL;
 
 //	initialize parseInfo struct
-	parseInfo *Result = init_info(Result);
+	parseInfo *Result = NULL;
+	Result = init_info(Result);
 
 	if (cmdline[strlen(cmdline) - 1] == '&') {
 		Result->boolBackground = 1;

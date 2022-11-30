@@ -1,3 +1,6 @@
+#ifndef PARSE_H
+#define PARSE_H
+
 #define MAX_VAR_NUM 10
 #define PIPE_MAX_NUM 10
 #define FILE_MAX_SIZE 40
@@ -37,6 +40,7 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type);
 
 parseInfo *init_info(parseInfo *info);
 
+#endif
 
 
 
