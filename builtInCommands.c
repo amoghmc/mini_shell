@@ -20,20 +20,22 @@ int isBuiltInCommand(char *command) {
 	return NO_SUCH_BUILTIN;
 }
 
-void executeBuiltInCommand(commandType *command, int type, historyType *history_command) {
+void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *history_state) {
 	switch (type) {
 		case CD:
 			chdir(command->VarList[1]);
 			break;
 		case HISTORY:
 //			Source: https://stackoverflow.com/questions/38792542/readline-h-history-usage-in-c
-			for (int i = 0; i < history_command->historyState->length; i++) { /* output history list */
-				printf(" %8s  %s\n", history_command->historyEntry[i]->line, history_command->historyEntry[i]->timestamp);
+			for (int i = 0; i < history_state->length; i++) { /* output history list */
+				printf(" %8s  %s\n", history_state->entries[i]->line, history_state->entries[i]->timestamp);
 			}
 			putchar('\n');
+			free(history_state);
 			break;
 		default:
-//			free_history(history_command);
+//			free_history(history_state);
+			clear_history();
 			exit(0);
 	}
 }

@@ -12,8 +12,6 @@
 char *print_prompt();
 
 void executeCommand(char *command, char *VarList[]);
-historyType *init_history(historyType *history_command);
-void free_history(historyType *history_command);
 
 int MAX_PATH = 1024;
 
@@ -22,6 +20,7 @@ int main() {
 	// Configure readline to auto-complete paths when the tab key is hit.
 	rl_bind_key('\t', rl_complete);
 
+	using_history();
 	while (1) {
 		int childPid, status;
 
@@ -31,6 +30,7 @@ int main() {
 		if (buffer != NULL) {
 			free_and_null(buffer)
 		}
+		add_history(input);
 
 		// Check for EOF.
 		if (!input)
@@ -42,7 +42,10 @@ int main() {
 		}
 		print_info(result);
 //		add input to readline history.
-		add_history(input);
+
+		time_t t;
+		time(&t);
+		add_history_time(ctime(&t));
 
 		commandType *input_command = &result->CommArray[0];
 
@@ -52,10 +55,7 @@ int main() {
 //			exit(0);
 //		}
 		if (commType != NO_SUCH_BUILTIN) {
-			historyType *history_command = NULL;
-			history_command = init_history(history_command);
-			executeBuiltInCommand(input_command, commType, history_command);
-			free_history(history_command);
+			executeBuiltInCommand(input_command, commType, history_get_history_state());
 		} else {
 //			create a child process to execute command
 			childPid = fork();
@@ -94,32 +94,8 @@ int main() {
 			free_and_null(input)
 		}
 	}
+	clear_history();
 	return 0;
-}
-
-historyType *init_history(historyType *history_command) {
-	history_command = malloc(sizeof(historyType));
-	history_command->historyState = history_get_history_state();
-	history_command->historyEntry = history_list();
-	return history_command;
-}
-
-void free_history(historyType *history_command) {
-	for (int i = 0; i < history_command->historyState->length; i++) {
-		if (history_command->historyEntry[i] != NULL) {
-			free_history_entry(history_command->historyEntry[i]);
-		}
-	}
-	putchar('\n');
-	if (history_command->historyEntry != NULL) {
-		free_and_null(history_command->historyEntry)
-	}
-	if (history_command->historyState != NULL) {
-		free_and_null(history_command->historyState)
-	}
-	if (history_command != NULL) {
-		free_and_null(history_command)
-	}
 }
 
 char *print_prompt() {
