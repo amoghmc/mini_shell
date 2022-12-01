@@ -5,12 +5,7 @@
 #include "builtIn.h"
 
 
-enum
-BUILTIN_COMMANDS {
-	NO_SUCH_BUILTIN = 0, EXIT, CD, HISTORY, JOBS, LEN
-};
-
-char *builtInArray[LEN - 1] = {
+const char *builtInArray[LEN] = {
 		"exit",
 		"cd",
 		"history",
@@ -18,7 +13,7 @@ char *builtInArray[LEN - 1] = {
 };
 
 int isBuiltInCommand(char *command) {
-	for (int i = 0; i < LEN - 1; i++) {
+	for (int i = EXIT; i < LEN; i++) {
 		if (strncmp(command, builtInArray[i], strlen(builtInArray[i])) == 0) {
 			return i;
 		}
@@ -32,7 +27,6 @@ void executeBuiltInCommand(commandType* command, int type) {
 	}
 	else if (type == CD) {
 		chdir(command->VarList[1]);
-		printf("asdasd");
 		return;
 	}
 }

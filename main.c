@@ -47,7 +47,7 @@ int main() {
 
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
-		if (commType) {
+		if (commType != NO_SUCH_BUILTIN) {
 			executeBuiltInCommand(input_command, commType);
 		} else {
 //			create a child process to execute command
@@ -80,15 +80,12 @@ int main() {
 				}
 			}
 		}
-		printf("2323");
-
 		// Free buffer that was allocated by readline
 		free_info(result);
 		free:
 		if (input != NULL) {
 			free_and_null(input)
 		}
-
 	}
 	return 0;
 }

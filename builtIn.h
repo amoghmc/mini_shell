@@ -7,6 +7,9 @@
 int isBuiltInCommand(char *command);
 void executeBuiltInCommand(commandType *command, int type);
 
-extern char * builtInArray[];
+enum
+BUILTIN_COMMANDS {
+	EXIT, CD, HISTORY, JOBS, LEN, NO_SUCH_BUILTIN
+};
 
 #endif
