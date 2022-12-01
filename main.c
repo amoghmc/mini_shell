@@ -12,6 +12,8 @@
 char *print_prompt();
 
 void executeCommand(char *command, char *VarList[]);
+historyType *init_history(historyType *history_command);
+void free_history(historyType *history_command);
 
 int MAX_PATH = 1024;
 
@@ -38,7 +40,6 @@ int main() {
 		if (result == NULL) {
 			goto free;
 		}
-
 		print_info(result);
 //		add input to readline history.
 		add_history(input);
@@ -47,8 +48,14 @@ int main() {
 
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
+//		if (commType == EXIT) {
+//			exit(0);
+//		}
 		if (commType != NO_SUCH_BUILTIN) {
-			executeBuiltInCommand(input_command, commType);
+			historyType *history_command = NULL;
+			history_command = init_history(history_command);
+			executeBuiltInCommand(input_command, commType, history_command);
+			free_history(history_command);
 		} else {
 //			create a child process to execute command
 			childPid = fork();
@@ -90,6 +97,30 @@ int main() {
 	return 0;
 }
 
+historyType *init_history(historyType *history_command) {
+	history_command = malloc(sizeof(historyType));
+	history_command->historyState = history_get_history_state();
+	history_command->historyEntry = history_list();
+	return history_command;
+}
+
+void free_history(historyType *history_command) {
+	for (int i = 0; i < history_command->historyState->length; i++) {
+		if (history_command->historyEntry[i] != NULL) {
+			free_history_entry(history_command->historyEntry[i]);
+		}
+	}
+	putchar('\n');
+	if (history_command->historyEntry != NULL) {
+		free_and_null(history_command->historyEntry)
+	}
+	if (history_command->historyState != NULL) {
+		free_and_null(history_command->historyState)
+	}
+	if (history_command != NULL) {
+		free_and_null(history_command)
+	}
+}
 
 char *print_prompt() {
 	char *buffer;
@@ -97,10 +128,6 @@ char *print_prompt() {
 	size_t allocSize = sizeof(char) * MAX_PATH;
 	cwd = (char *) malloc(allocSize);
 	buffer = (char *) malloc(allocSize);
-//	login = (char *) malloc(allocSize);
-
-//	Source: https://stackoverflow.com/questions/8953424/how-to-get-the-username-in-c-c-in-linux
-//	Gets user id
 
 //	Source: https://stackoverflow.com/questions/504810/how-do-i-find-the-current-machines-full-hostname-in-c-hostname-and-domain-info
 //	Gets hostname of machine
