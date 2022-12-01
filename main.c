@@ -30,7 +30,12 @@ int main() {
 		if (buffer != NULL) {
 			free_and_null(buffer)
 		}
+
+//		add input to readline history.
 		add_history(input);
+		time_t t;
+		time(&t);
+		add_history_time(ctime(&t));
 
 		// Check for EOF.
 		if (!input)
@@ -41,11 +46,6 @@ int main() {
 			goto free;
 		}
 		print_info(result);
-//		add input to readline history.
-
-		time_t t;
-		time(&t);
-		add_history_time(ctime(&t));
 
 		commandType *input_command = &result->CommArray[0];
 
