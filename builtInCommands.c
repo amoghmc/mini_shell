@@ -28,7 +28,7 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 		case HISTORY:
 //			Source: https://stackoverflow.com/questions/38792542/readline-h-history-usage-in-c
 			for (int i = 0; i < history_state->length; i++) { /* output history list */
-				printf(" %8s  %s\n", history_state->entries[i]->line, history_state->entries[i]->timestamp);
+			printf(" %8s  %s", history_state->entries[i]->line, history_state->entries[i]->timestamp);
 			}
 			putchar('\n');
 			free(history_state);
