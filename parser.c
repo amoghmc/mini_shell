@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "parse.h"
+#define check_and_free(x) if (x != NULL) { free_and_null(x) }
 
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
 //	The members of parseInfo can be seen in parse.h.  Commands are always stored
@@ -16,12 +17,9 @@
 //	cmdline can end either with '\n' or '\0'.
 
 parseInfo *parse(char *cmdline) {
-	if (strpbrk(cmdline, "\t")) {
+	if (strpbrk(cmdline, "\t") || strlen(cmdline) < 1) {
 		return NULL;
 	}
-
-	if (strlen(cmdline) < 1)
-		return NULL;
 
 //	initialize parseInfo struct
 	parseInfo *Result = NULL;
@@ -45,11 +43,16 @@ parseInfo *parse(char *cmdline) {
 	for (i = 0; i < pipe_delims; i++) {
 //		split sub-command separated by space delimiter
 
+		if (result_pipe[i] == NULL) {
+			error_check(Result, result_pipe, NULL, 2);
+			return NULL;
+		}
 		char *cmd_copy = strdup(result_pipe[i]);
 		char **result_space = split_string(result_pipe[i], &space_delims, " ");
 
-		if (space_delims > MAX_VAR_NUM) {
+		if (space_delims > MAX_VAR_NUM || result_space[0] == NULL) {
 			error_check(Result, result_pipe, result_space, 3);
+			check_and_free(cmd_copy)
 			return NULL;
 		}
 
@@ -188,23 +191,13 @@ void free_info(parseInfo *info) {
 	printf("\nfree_info: freeing memory associated to parseInfo struct\n");
 	for (int i = 0; i < info->pipeNum; i++) {
 		for (int j = 0; j < info->CommArray[i].VarNum; j++) {
-			if (info->CommArray[i].VarList[j] != NULL) {
-				free_and_null(info->CommArray[i].VarList[j])
-			}
+			check_and_free(info->CommArray[i].VarList[j])
 		}
-		if (info->CommArray[i].inFile != NULL) {
-			free_and_null(info->CommArray[i].inFile)
-		}
-		if (info->CommArray[i].outFile != NULL) {
-			free_and_null(info->CommArray[i].outFile)
-		}
-		if (info->CommArray[i].command != NULL) {
-			free_and_null(info->CommArray[i].command)
-		}
+		check_and_free(info->CommArray[i].inFile)
+		check_and_free(info->CommArray[i].outFile)
+		check_and_free(info->CommArray[i].command)
 	}
-	if (info != NULL) {
-		free_and_null(info)
-	}
+	check_and_free(info)
 }
 
 // Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
@@ -239,18 +232,16 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 			break;
 		case 2:
 			printf("\nError: too many pipes to parse!");
-			free_and_null(info)
-			free_and_null(res_pipe)
 			break;
 		case 3:
 			printf("\nError: too many arguments for a single command to parse!");
-			free_and_null(info)
-			free_and_null(res_pipe)
-			free_and_null(res_space)
 			break;
 		default:
 			printf("\nError!");
 			break;
 	}
+	check_and_free(info)
+	check_and_free(res_pipe)
+   	check_and_free(res_space)
 	printf("\n");
 }

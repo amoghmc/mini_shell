@@ -94,7 +94,6 @@ int main() {
 			free_and_null(input)
 		}
 	}
-	clear_history();
 	return 0;
 }
 
