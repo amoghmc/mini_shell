@@ -1,6 +1,6 @@
 /************************************************************************  
- *   parse.c  -  The parsing portion of my small shell  
- *   Syntax:     myshell command1 [< infile] [| command]* [> outfile] [&]
+ *   parse.c  -  The parsing portion of my small shell
+ *   Syntax:     shell command1 [< infile] [| command]* [> outfile] [&] todo pipes
  ************************************************************************/
 
 #include <string.h>
@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "parse.h"
-#define check_and_free(x) if (x != NULL) { free_and_null(x) }
 
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
 //	The members of parseInfo can be seen in parse.h.  Commands are always stored
@@ -88,6 +87,7 @@ void parse_command(commandType *result, char *cmd, char **res_space, int space_d
 
 //	for each sub-command separated by space delimiter
 	int j = 0;
+	int displacement = 0;
 	result->boolInfile = false;
 	result->boolOutfile = false;
 	if (strstr(cmd, ">") != NULL) {
@@ -104,17 +104,10 @@ void parse_command(commandType *result, char *cmd, char **res_space, int space_d
 		for (int i = 0; i < space_delims; i++) {
 			result->VarList[i] = strdup(res_space[i]);
 		}
-//		end arr with NULL for execvp
-		result->VarList[space_delims] = NULL;
-//		store name of subcommand
-		result->command = strdup(res_space[0]);
-//		store total # of args of subcommand + 1 more for NULL
-		result->VarNum = space_delims + 1;
 	}
 //	< is present
 	else if ((!result->boolOutfile) && (result->boolInfile)) {
 		result->VarNum = 0;
-		int displacement = 0;
 		while (j < space_delims) {
 			if (strcmp(res_space[j], "<") == 0) {
 				if (result->inFile != NULL) {
@@ -129,17 +122,10 @@ void parse_command(commandType *result, char *cmd, char **res_space, int space_d
 			}
 			j++;
 		}
-//		end arr with NULL for execvp
-		result->VarList[space_delims + displacement] = NULL;
-//		store name of subcommand
-		result->command = strdup(res_space[0]);
-//		store total # of args of subcommand + 1 more for NULL
-		result->VarNum = space_delims + displacement + 1;
 	}
 //	> is present
 	else if ((result->boolOutfile) && (!result->boolInfile)) {
 		result->VarNum = 0;
-		int displacement = 0;
 		while (j < space_delims) {
 			if (strcmp(res_space[j], ">") == 0) {
 				if (result->outFile != NULL) {
@@ -154,13 +140,14 @@ void parse_command(commandType *result, char *cmd, char **res_space, int space_d
 			}
 			j++;
 		}
-//		end arr with NULL for execvp
-		result->VarList[space_delims + displacement] = NULL;
-//		store name of subcommand
-		result->command = strdup(res_space[0]);
-//		store total # of args of subcommand + 1 more for NULL
-		result->VarNum = space_delims + displacement + 1;
+
 	}
+//	end arr with NULL for execvp
+	result->VarList[space_delims + displacement] = NULL;
+//	store name of subcommand
+	result->command = strdup(res_space[0]);
+//	store total # of args of subcommand + 1 more for NULL
+	result->VarNum = space_delims + displacement + 1;
 }
 
 void print_info(parseInfo *info) {

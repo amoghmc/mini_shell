@@ -90,9 +90,7 @@ int main() {
 		// Free buffer that was allocated by readline
 		free_info(result);
 		free:
-		if (input != NULL) {
-			free_and_null(input)
-		}
+		check_and_free(input)
 	}
 	return 0;
 }

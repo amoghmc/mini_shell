@@ -3,9 +3,8 @@
 
 #define MAX_VAR_NUM 10
 #define PIPE_MAX_NUM 10
-#define FILE_MAX_SIZE 40
-#define MAX_LINE 81
 #define free_and_null(x) free(x); x = NULL;
+#define check_and_free(x) if (x != NULL) { free_and_null(x) }
 
 typedef struct {
 	char *command;
