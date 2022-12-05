@@ -27,9 +27,7 @@ int main() {
 		// Display prompt and read input
 		char *buffer = print_prompt();
 		char *input = readline(buffer);
-		if (buffer != NULL) {
-			free_and_null(buffer)
-		}
+		check_and_free(buffer)
 
 //		add input to readline history.
 		add_history(input);
@@ -48,12 +46,9 @@ int main() {
 		print_info(result);
 
 		commandType *input_command = &result->CommArray[0];
-
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
-//		if (commType == EXIT) {
-//			exit(0);
-//		}
+
 		if (commType != NO_SUCH_BUILTIN) {
 			executeBuiltInCommand(input_command, commType, history_get_history_state());
 		} else {
@@ -77,6 +72,7 @@ int main() {
 				free_info(result);
 				exit(1);
 			} else {
+//				todo how to run a daemon process?
 //				if (isBackgroundJob(cmd)){
 ////					record in list of background jobs
 //				} else {
