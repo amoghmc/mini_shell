@@ -18,7 +18,7 @@ int MAX_PATH = 1024;
 //	Readline template source: https://en.wikipedia.org/wiki/GNU_Readline
 int main() {
 	// Configure readline to auto-complete paths when the tab key is hit.
-	rl_bind_key('\t', rl_complete);
+//	rl_bind_key('\t', rl_complete);
 
 	using_history();
 	while (1) {
@@ -84,8 +84,8 @@ int main() {
 			}
 		}
 		// Free buffer that was allocated by readline
-		free_info(result);
 		free:
+		free_info(result);
 		check_and_free(input)
 	}
 	return 0;

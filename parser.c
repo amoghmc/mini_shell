@@ -57,8 +57,8 @@ parseInfo *parse(char *cmdline) {
 
 		int status = parse_command(&Result->CommArray[i], cmd_copy, result_space, space_delims);
 		if (status) {
-			error_check(Result, result_pipe, result_space, status);
-			check_and_free(cmd_copy)
+			error_check(Result, result_pipe, result_space, 1);
+//			check_and_free(cmd_copy)
 			return NULL;
 		}
 		free_and_null(result_space)
@@ -101,8 +101,7 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 	if (strstr(cmd, "<") != NULL) {
 		result->boolInfile = true;
 	}
-	free(cmd);
-	cmd = NULL;
+	free_and_null(cmd)
 
 //	both are not present
 	if ((!result->boolOutfile) && (!result->boolInfile)) {
@@ -117,6 +116,9 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 			if (strcmp(res_space[j], "<") == 0) {
 				check_and_free(result->inFile)
 				if (res_space[j + 1] == NULL) {
+					for (int k = 0; k < space_delims; k++) {
+						check_and_free(result->VarList[k])
+					}
 					return 1;
 				}
 				result->inFile = strdup(res_space[j + 1]);
@@ -136,6 +138,9 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 			if (strcmp(res_space[j], ">") == 0) {
 				check_and_free(result->outFile)
 				if (res_space[j + 1] == NULL) {
+					for (int k = 0; k < space_delims; k++) {
+						check_and_free(result->VarList[k])
+					}
 					return 1;
 				}
 				result->outFile = strdup(res_space[j + 1]);
@@ -183,16 +188,17 @@ void print_info(parseInfo *info) {
 }
 
 void free_info(parseInfo *info) {
-	printf("\nfree_info: freeing memory associated to parseInfo struct\n");
-	for (int i = 0; i < info->pipeNum; i++) {
-		for (int j = 0; j < info->CommArray[i].VarNum; j++) {
-			check_and_free(info->CommArray[i].VarList[j])
+	if (info != NULL) {
+		for (int i = 0; i < info->pipeNum; i++) {
+			for (int j = 0; j < info->CommArray[i].VarNum; j++) {
+				check_and_free(info->CommArray[i].VarList[j])
+			}
+			check_and_free(info->CommArray[i].inFile)
+			check_and_free(info->CommArray[i].outFile)
+			check_and_free(info->CommArray[i].command)
 		}
-		check_and_free(info->CommArray[i].inFile)
-		check_and_free(info->CommArray[i].outFile)
-		check_and_free(info->CommArray[i].command)
+		free_and_null(info)
 	}
-	check_and_free(info)
 }
 
 // Source: https://stackoverflow.com/questions/11198604/c-split-string-into-an-array-of-strings
