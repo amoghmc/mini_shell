@@ -46,9 +46,9 @@ int main() {
 		print_info(result);
 
 		commandType *input_command = &result->CommArray[0];
+
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
-
 		if (commType != NO_SUCH_BUILTIN) {
 			executeBuiltInCommand(input_command, commType, history_get_history_state());
 		} else {

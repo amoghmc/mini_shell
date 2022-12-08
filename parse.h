@@ -3,8 +3,8 @@
 
 #define MAX_VAR_NUM 10
 #define PIPE_MAX_NUM 10
-#define free_and_null(x) free(x); x = NULL;
-#define check_and_free(x) if (x != NULL) { free_and_null(x) }
+#define free_and_null(x) free(x); (x) = NULL;
+#define check_and_free(x) if ((x) != NULL) { free_and_null(x) }
 
 typedef struct {
 	char *command;
@@ -31,7 +31,7 @@ void free_info(parseInfo *);
 
 void print_info(parseInfo *);
 
-void parse_command(commandType *result, char *cmd, char **res_space, int space_delims);
+int parse_command(commandType *result, char *cmd, char **res_space, int space_delims);
 
 char **split_string(char *cmdline, int *n_delims, char *delim);
 

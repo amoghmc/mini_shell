@@ -55,7 +55,12 @@ parseInfo *parse(char *cmdline) {
 			return NULL;
 		}
 
-		parse_command(&Result->CommArray[i], cmd_copy, result_space, space_delims);
+		int status = parse_command(&Result->CommArray[i], cmd_copy, result_space, space_delims);
+		if (status) {
+			error_check(Result, result_pipe, result_space, status);
+			check_and_free(cmd_copy)
+			return NULL;
+		}
 		free_and_null(result_space)
 	}
 //	store total # of pipes
@@ -82,7 +87,7 @@ parseInfo *init_info(parseInfo *info) {
 	return info;
 }
 
-void parse_command(commandType *result, char *cmd, char **res_space, int space_delims) {
+int parse_command(commandType *result, char *cmd, char **res_space, int space_delims) {
 	printf("parse_command: parsing a single command\n");
 
 //	for each sub-command separated by space delimiter
@@ -110,8 +115,9 @@ void parse_command(commandType *result, char *cmd, char **res_space, int space_d
 		result->VarNum = 0;
 		while (j < space_delims) {
 			if (strcmp(res_space[j], "<") == 0) {
-				if (result->inFile != NULL) {
-					free_and_null(result->inFile)
+				check_and_free(result->inFile)
+				if (res_space[j + 1] == NULL) {
+					return 1;
 				}
 				result->inFile = strdup(res_space[j + 1]);
 				result->boolInfile = j;
@@ -128,8 +134,9 @@ void parse_command(commandType *result, char *cmd, char **res_space, int space_d
 		result->VarNum = 0;
 		while (j < space_delims) {
 			if (strcmp(res_space[j], ">") == 0) {
-				if (result->outFile != NULL) {
-					free_and_null(result->outFile)
+				check_and_free(result->outFile)
+				if (res_space[j + 1] == NULL) {
+					return 1;
 				}
 				result->outFile = strdup(res_space[j + 1]);
 				result->boolOutfile = j;
@@ -148,6 +155,7 @@ void parse_command(commandType *result, char *cmd, char **res_space, int space_d
 	result->command = strdup(res_space[0]);
 //	store total # of args of subcommand + 1 more for NULL
 	result->VarNum = space_delims + displacement + 1;
+	return 0;
 }
 
 void print_info(parseInfo *info) {
@@ -215,7 +223,7 @@ char **split_string(char *cmdline, int *n_delim, char *delim) {
 void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 	switch (type) {
 		case 1:
-			printf("\nError: command too big to parse!");
+			printf("\nError: STDIN/STDOUT is NULL!");
 			break;
 		case 2:
 			printf("\nError: too many pipes to parse!");
