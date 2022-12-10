@@ -31,9 +31,9 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 				printf(" %8s  %s", history_state->entries[i]->line, history_state->entries[i]->timestamp);
 			}
 			putchar('\n');
-			free(history_state);
 			break;
 		default:
-			exit(0);
+			printf("\nError! No such builtin command!");
 	}
+	free(history_state);
 }

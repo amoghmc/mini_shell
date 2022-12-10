@@ -49,7 +49,12 @@ int main() {
 
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
-		if (commType != NO_SUCH_BUILTIN) {
+		if (commType == EXIT) {
+			free_info(result);
+			check_and_free(input)
+			exit(0);
+		}
+		else if (commType != NO_SUCH_BUILTIN) {
 			executeBuiltInCommand(input_command, commType, history_get_history_state());
 		} else {
 //			create a child process to execute command
