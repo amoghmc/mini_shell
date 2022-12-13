@@ -11,7 +11,7 @@
 
 char *print_prompt();
 
-void executeCommand(char *command, char *VarList[]);
+void executeCommand(commandType *input_command, parseInfo* result);
 
 int MAX_PATH = 1024;
 
@@ -62,20 +62,7 @@ int main() {
 			if (childPid == 0) {
 //				calls execvp
 				printf("Executing child process...\n\n");
-				if (!input_command->boolInfile && !input_command->boolOutfile) {
-					execvp(input_command->command, input_command->VarList);
-				} else if (input_command->boolInfile) {
-					int fd = open(input_command->inFile, O_RDONLY);
-					dup2(fd, STDIN_FILENO);
-					execvp(input_command->command, input_command->VarList);
-				} else {
-					int fd = open(input_command->outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-					dup2(fd, STDOUT_FILENO);
-					execvp(input_command->command, input_command->VarList);
-				}
-				printf("Failed to execute command!\n");
-				free_info(result);
-				exit(1);
+				executeCommand(input_command, result);
 			} else {
 //				todo how to run a daemon process?
 //				if (isBackgroundJob(cmd)){
@@ -94,6 +81,23 @@ int main() {
 		check_and_free(input)
 	}
 	return 0;
+}
+
+void executeCommand(commandType* input_command, parseInfo* result) {
+	if (!input_command->boolInfile && !input_command->boolOutfile) {
+		execvp(input_command->command, input_command->VarList);
+	} else if (input_command->boolInfile) {
+		int fd = open(input_command->inFile, O_RDONLY);
+		dup2(fd, STDIN_FILENO);
+		execvp(input_command->command, input_command->VarList);
+	} else {
+		int fd = open(input_command->outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+		dup2(fd, STDOUT_FILENO);
+		execvp(input_command->command, input_command->VarList);
+	}
+	printf("Failed to execute command!\n");
+	free_info(result);
+	exit(1);
 }
 
 char *print_prompt() {
