@@ -175,20 +175,20 @@ void print_info(parseInfo *info) {
 	printf("print_info: printing info about parseInfo struct\n");
 
 //	for each command separated by pipe
-		for (int i = 0; i < info->pipeNum; i++) {
-			printf("Command[%d]: %s\n", i, info->CommArray[i].command);
-			if (info->CommArray[i].boolInfile) {
-				printf("Infile: %s\n", info->CommArray[i].inFile);
-			}
-			if (info->CommArray[i].boolOutfile) {
-				printf("Outfile: %s\n", info->CommArray[i].outFile);
-			}
-			for (int k = 0; k < info->CommArray[i].VarNum; k++) {
-				printf("Arg[%d]: %s\n", k, info->CommArray[i].VarList[k]);
-			}
+	for (int i = 0; i < info->pipeNum; i++) {
+		printf("Command[%d]: %s\n", i, info->CommArray[i].command);
+		if (info->CommArray[i].boolInfile) {
+			printf("Infile: %s\n", info->CommArray[i].inFile);
+		}
+		if (info->CommArray[i].boolOutfile) {
+			printf("Outfile: %s\n", info->CommArray[i].outFile);
+		}
+		for (int k = 0; k < info->CommArray[i].VarNum; k++) {
+			printf("Arg[%d]: %s\n", k, info->CommArray[i].VarList[k]);
 		}
 	}
 }
+
 
 void free_info(parseInfo *info) {
 	if (info != NULL) {
