@@ -27,6 +27,12 @@ parseInfo *parse(char *cmdline) {
 	if (strlen(cmdline) < 1) {
 		return NULL;
 	}
+
+	if (strpbrk(cmdline, "&") && strpbrk(cmdline, "|")) {
+		error_check(NULL, NULL, NULL, 4);
+		return NULL;
+	}
+
 //	convert tabs into spaces
 	convert_tabs(cmdline);
 
@@ -34,13 +40,16 @@ parseInfo *parse(char *cmdline) {
 	parseInfo *Result = NULL;
 	Result = init_info(Result);
 
+	char delim[] = "|";
 	if (strpbrk(cmdline, "&")) {
-		Result->boolBackground = 1;
+		Result->boolBackground = true;
+		strcpy(delim, "&");
 	}
 
 	int pipe_delims, space_delims = 0;
+
 //	splits string separated by pipe delimiter
-	char **result_pipe = split_string(cmdline, &pipe_delims, "|");
+	char **result_pipe = split_string(cmdline, &pipe_delims, delim);
 
 	if (pipe_delims > PIPE_MAX_NUM) {
 		error_check(Result, result_pipe, NULL, 2);
