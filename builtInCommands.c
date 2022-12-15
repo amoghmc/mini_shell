@@ -8,7 +8,8 @@ const char *builtInArray[LEN] = {
 		"exit",
 		"cd",
 		"history",
-		"jobs"
+		"jobs",
+		"kill"
 };
 
 int isBuiltInCommand(char *command) {
@@ -31,6 +32,13 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 				printf(" %8s  %s", history_state->entries[i]->line, history_state->entries[i]->timestamp);
 			}
 			putchar('\n');
+			break;
+		case JOBS:
+//			todo
+
+			break;
+		case KILL:
+//			todo
 			break;
 		default:
 			printf("\nError! No such builtin command!");

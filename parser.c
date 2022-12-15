@@ -11,6 +11,7 @@
 #include "parse.h"
 
 char *trim_whitespace(char *str);
+void convert_tabs(char *str);
 void init_sub_command(commandType* result, char* cmd);
 
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
@@ -22,16 +23,18 @@ void init_sub_command(commandType* result, char* cmd);
 parseInfo *parse(char *cmdline) {
 //	get a substring with leading/trailing whitespace removed
 	cmdline = trim_whitespace(cmdline);
-//	check if input is null or contains only tabs
-	if (strpbrk(cmdline, "\t") || strlen(cmdline) < 1) {
+//	check if input is null
+	if (strlen(cmdline) < 1) {
 		return NULL;
 	}
+//	convert tabs into spaces
+	convert_tabs(cmdline);
 
 //	initialize parseInfo struct
 	parseInfo *Result = NULL;
 	Result = init_info(Result);
 
-	if (cmdline[strlen(cmdline) - 1] == '&') {
+	if (strpbrk(cmdline, "&")) {
 		Result->boolBackground = 1;
 	}
 
@@ -118,6 +121,10 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 			result->VarList[i] = strdup(res_space[i]);
 		}
 	}
+
+//	todo create pointers to the following to refactor:
+////	result->inFile, result->outFile
+////	result->boolInFile, result->boolOutFile
 //	< is present
 	else if ((!result->boolOutfile) && (result->boolInfile)) {
 		result->VarNum = 0;
@@ -240,6 +247,9 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 		case 3:
 			printf("\nError: too many arguments for a single command to parse!");
 			break;
+		case 4:
+			printf("\nError: can't use jobs with pipes");
+			break;
 		default:
 			printf("\nError!");
 			break;
@@ -268,4 +278,12 @@ char *trim_whitespace(char *str) {
 	end[1] = '\0';
 
 	return str;
+}
+
+void convert_tabs(char *str) {
+	for (int i = 0; i < strlen(str); i++) {
+		if (str[i] == '\t') {
+			str[i] = ' ';
+		}
+	}
 }

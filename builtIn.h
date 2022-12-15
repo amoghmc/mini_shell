@@ -10,7 +10,7 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 
 enum
 BUILTIN_COMMANDS {
-	EXIT, CD, HISTORY, JOBS, LEN, NO_SUCH_BUILTIN
+	EXIT, CD, HISTORY, JOBS, KILL, LEN, NO_SUCH_BUILTIN
 };
 
 #endif
