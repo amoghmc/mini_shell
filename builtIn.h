@@ -13,4 +13,9 @@ BUILTIN_COMMANDS {
 	EXIT, CD, HISTORY, JOBS, KILL, LEN, NO_SUCH_BUILTIN
 };
 
+typedef struct {
+	int job_ids[PIPE_MAX_NUM];
+	int job_count;
+} job_struct;
+
 #endif

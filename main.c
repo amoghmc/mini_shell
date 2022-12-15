@@ -11,14 +11,14 @@
 
 char *print_prompt();
 
-void executeCommand(commandType *input_command, parseInfo* result);
+void executeCommand(commandType *input_command, parseInfo *result);
 
 int MAX_PATH = 1024;
 
 //	Readline template source: https://en.wikipedia.org/wiki/GNU_Readline
 int main() {
-	// Configure readline to auto-complete paths when the tab key is hit.
-//	rl_bind_key('\t', rl_complete);
+	// Configure readline to disable tab completion
+	rl_bind_key('\t', rl_insert);
 
 	using_history();
 	while (1) {
@@ -53,25 +53,39 @@ int main() {
 			free_info(result);
 			check_and_free(input)
 			exit(0);
-		}
-		else if (commType != NO_SUCH_BUILTIN) {
+		} else if (commType != NO_SUCH_BUILTIN) {
 			executeBuiltInCommand(input_command, commType, history_get_history_state());
 		} else {
 //			create a child process to execute command
 			childPid = fork();
+////		inside child...
 			if (childPid == 0) {
 //				calls execvp
 				printf("Executing child process...\n\n");
 				executeCommand(input_command, result);
-			} else {
+			}
+////		inside parent...
+			else {
 //				todo how to run a daemon process?
-//				if (isBackgroundJob(cmd)){
-////					record in list of background jobs
-//				} else {
+				if (result->boolBackground){
+////				record in list of background jobs
+				} else {
 
-				waitpid(childPid, &status, 0);
-				if (status != 0) {
-					printf("Error! Child exited with error code %d\n", WEXITSTATUS(status));
+//				stty tostop
+//				pid_t childGroupPid = setpgrp();
+//				tcsetpgrp(NULL, childGroupPid);
+
+				waitpid(childPid, &status, NO_MATCH);
+//				pid_t return_pid = waitpid(childPid, &status, WNOHANG);
+//				printf("STATUS: %d", return_pid);
+//				while(return_pid == 0) {
+//					return_pid = waitpid(childPid, &status, WNOHANG);
+//				}
+//
+//				printf("STATUS: %d", return_pid);
+//				if (status != 0) {
+//					printf("Error! Child exited with error code %d\n", WEXITSTATUS(status));
+//				}
 				}
 			}
 		}
@@ -83,7 +97,7 @@ int main() {
 	return 0;
 }
 
-void executeCommand(commandType* input_command, parseInfo* result) {
+void executeCommand(commandType *input_command, parseInfo *result) {
 	if (!input_command->boolInfile && !input_command->boolOutfile) {
 		execvp(input_command->command, input_command->VarList);
 	} else if (input_command->boolInfile) {
@@ -95,7 +109,7 @@ void executeCommand(commandType* input_command, parseInfo* result) {
 		dup2(fd, STDOUT_FILENO);
 		execvp(input_command->command, input_command->VarList);
 	}
-	printf("Failed to execute command!\n");
+	perror("Error! execvp");
 	free_info(result);
 	exit(1);
 }
