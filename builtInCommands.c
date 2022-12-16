@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include "builtIn.h"
 
+void change_dir(char* path);
+
 const char *builtInArray[LEN] = {
 		"exit",
 		"cd",
@@ -24,7 +26,7 @@ int isBuiltInCommand(char *command) {
 void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *history_state) {
 	switch (type) {
 		case CD:
-			chdir(command->VarList[1]);
+			change_dir(command->VarList[1]);
 			break;
 		case HISTORY:
 //			Source: https://stackoverflow.com/questions/38792542/readline-h-history-usage-in-c
@@ -41,7 +43,14 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 //			todo
 			break;
 		default:
-			printf("\nError! No such builtin command!");
+			printf("\nError! No such builtin command!\n");
 	}
 	free(history_state);
+}
+
+void change_dir(char* path) {
+	int status = chdir(path);
+	if (status) {
+		printf("\nError! No such path exists!\n");
+	}
 }

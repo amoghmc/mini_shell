@@ -46,6 +46,8 @@ int main() {
 		print_info(result);
 
 		commandType *input_command = &result->CommArray[0];
+//		job_info* jobs = NULL;
+//		jobs = init_jobs(jobs);
 
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
@@ -69,23 +71,9 @@ int main() {
 //				todo how to run a daemon process?
 				if (result->boolBackground){
 ////				record in list of background jobs
+					waitpid(childPid, &status, WNOHANG);
 				} else {
-
-//				stty tostop
-//				pid_t childGroupPid = setpgrp();
-//				tcsetpgrp(NULL, childGroupPid);
-
-				waitpid(childPid, &status, NO_MATCH);
-//				pid_t return_pid = waitpid(childPid, &status, WNOHANG);
-//				printf("STATUS: %d", return_pid);
-//				while(return_pid == 0) {
-//					return_pid = waitpid(childPid, &status, WNOHANG);
-//				}
-//
-//				printf("STATUS: %d", return_pid);
-//				if (status != 0) {
-//					printf("Error! Child exited with error code %d\n", WEXITSTATUS(status));
-//				}
+					waitpid(childPid, &status, NO_MATCH);
 				}
 			}
 		}
