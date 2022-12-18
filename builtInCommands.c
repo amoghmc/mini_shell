@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "builtIn.h"
 
-void change_dir(char* path);
+void change_dir(char *path);
 
 const char *builtInArray[LEN] = {
 		"exit",
@@ -37,7 +37,6 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			break;
 		case JOBS:
 //			todo
-
 			break;
 		case KILL:
 //			todo
@@ -48,9 +47,40 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 	free(history_state);
 }
 
-void change_dir(char* path) {
+void change_dir(char *path) {
 	int status = chdir(path);
 	if (status) {
 		printf("\nError! No such path exists!\n");
 	}
 }
+
+/* Find the active job with the indicated pgid.  */
+job *find_job(pid_t pgid) {
+	job *j;
+
+	for (j = first_job; j; j = j->next)
+		if (j->pgid == pgid)
+			return j;
+	return NULL;
+}
+
+/* Return true if all processes in the job have stopped or completed.  */
+int job_is_stopped(job *j) {
+	process *p;
+
+	for (p = j->first_process; p; p = p->next)
+		if (!p->completed && !p->stopped)
+			return 0;
+	return 1;
+}
+
+/* Return true if all processes in the job have completed.  */
+int job_is_completed(job *j) {
+	process *p;
+
+	for (p = j->first_process; p; p = p->next)
+		if (!p->completed)
+			return 0;
+	return 1;
+}
+
