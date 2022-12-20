@@ -31,7 +31,6 @@ typedef struct job {
 	int stdin, stdout, stderr;  /* standard i/o channels */
 } job;
 
-job *first_job = NULL;
 
 job *find_job(pid_t pgid);
 

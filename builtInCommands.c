@@ -6,6 +6,8 @@
 
 void change_dir(char *path);
 
+job *first_job = NULL;
+
 const char *builtInArray[LEN] = {
 		"exit",
 		"cd",

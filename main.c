@@ -69,7 +69,7 @@ int main() {
 ////		inside parent...
 			else {
 //				todo how to run a daemon process?
-				if (result->boolBackground){
+				if (result->boolBackground) {
 ////				record in list of background jobs
 					waitpid(childPid, &status, WNOHANG);
 				} else {

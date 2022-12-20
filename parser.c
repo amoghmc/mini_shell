@@ -11,8 +11,10 @@
 #include "parse.h"
 
 char *trim_whitespace(char *str);
+
 void convert_tabs(char *str);
-void init_sub_command(commandType* result, char* cmd);
+
+void init_sub_command(commandType *result, char *cmd);
 
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
 //	The members of parseInfo can be seen in parse.h.  Commands are always stored
@@ -106,7 +108,7 @@ parseInfo *init_info(parseInfo *info) {
 	return info;
 }
 
-void init_sub_command(commandType* result, char* cmd) {
+void init_sub_command(commandType *result, char *cmd) {
 	result->boolInfile = false;
 	result->boolOutfile = false;
 	if (strstr(cmd, ">") != NULL) {
