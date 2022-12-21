@@ -66,7 +66,7 @@ int main() {
 				executeCommand(in, pipe_file_descriptor[1], &result->CommArray[i], result);
 
 				/* No need for the write end of the pipe, the child will write here.  */
-				close (pipe_file_descriptor[1]);
+				close(pipe_file_descriptor[1]);
 				/* Keep the read end of the pipe, the next child will read from there.  */
 				in = pipe_file_descriptor[0];
 			}
@@ -97,8 +97,7 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 				dup2(out, STDOUT_FILENO);
 				close(out);
 			}
-		}
-		else {
+		} else {
 			if (in != STDIN_FILENO) {
 				dup2(in, STDIN_FILENO);
 				close(in);

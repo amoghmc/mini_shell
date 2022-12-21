@@ -32,8 +32,15 @@ parseInfo *parse(char *cmdline) {
 		return NULL;
 	}
 
+//	ensure either & or | exists but not both
 	if (strpbrk(cmdline, "&") && strpbrk(cmdline, "|")) {
 		error_check(NULL, NULL, NULL, 4);
+		return NULL;
+	}
+
+	//	ensure either one of (>, <) or | exists but not both
+	if ((strpbrk(cmdline, "<") && strpbrk(cmdline, "|")) || (strpbrk(cmdline, ">") && strpbrk(cmdline, "|"))) {
+		error_check(NULL, NULL, NULL, 6);
 		return NULL;
 	}
 
@@ -240,7 +247,10 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 			printf("\nError: can't use jobs with pipes");
 			break;
 		case 5:
-			printf("\nError: Can have only one redirect in either direction!");
+			printf("\nError: can have only one redirect in either direction!");
+			break;
+		case 6:
+			printf("\nError: can't use I/O redirection with pipes");
 			break;
 		default:
 			printf("\nError!");
