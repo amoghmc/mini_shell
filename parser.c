@@ -14,7 +14,9 @@ char *trim_whitespace(char *str);
 
 void convert_tabs(char *str);
 
-void init_sub_command(commandType *result, char *cmd);
+int countString(const char *haystack, const char *needle);
+
+void init_sub_command(commandType *result, char *cmd, int* countIn, int* countOut);
 
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
 //	The members of parseInfo can be seen in parse.h.  Commands are always stored
@@ -78,7 +80,7 @@ parseInfo *parse(char *cmdline) {
 
 		int status = parse_command(&Result->CommArray[i], cmd_copy, result_space, space_delims);
 		if (status) {
-			error_check(Result, result_pipe, result_space, 1);
+			error_check(Result, result_pipe, result_space, status);
 //			check_and_free(cmd_copy)
 			return NULL;
 		}
@@ -108,21 +110,24 @@ parseInfo *init_info(parseInfo *info) {
 	return info;
 }
 
-void init_sub_command(commandType *result, char *cmd) {
+void init_sub_command(commandType *result, char *cmd, int* countIn, int* countOut) {
 	result->boolInfile = false;
 	result->boolOutfile = false;
 	if (strstr(cmd, ">") != NULL) {
 		result->boolOutfile = true;
+		*countOut = countString(cmd, ">");
 	}
 	if (strstr(cmd, "<") != NULL) {
 		result->boolInfile = true;
+		*countIn = countString(cmd, "<");
 	}
 	free_and_null(cmd)
 }
 
 int parse_command(commandType *result, char *cmd, char **res_space, int space_delims) {
 	printf("parse_command: parsing a single command\n");
-	init_sub_command(result, cmd);
+	int countOut = 0, countIn = 0;
+	init_sub_command(result, cmd, &countIn, &countOut);
 
 	int j = 0;
 	int displacement = 0;
@@ -142,6 +147,7 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 		while (j < space_delims) {
 			if (strcmp(res_space[j], "<") == 0) {
 				check_and_free(result->inFile)
+//				if no input file exists return error 1
 				if (res_space[j + 1] == NULL) {
 					for (int k = 0; k < space_delims; k++) {
 						check_and_free(result->VarList[k])
@@ -164,6 +170,7 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 		while (j < space_delims) {
 			if (strcmp(res_space[j], ">") == 0) {
 				check_and_free(result->outFile)
+//				if no output file exists return error 1
 				if (res_space[j + 1] == NULL) {
 					for (int k = 0; k < space_delims; k++) {
 						check_and_free(result->VarList[k])
@@ -175,6 +182,46 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 				j++;
 				displacement -= 2;
 			} else {
+				result->VarList[j + displacement] = strdup(res_space[j]);
+			}
+			j++;
+		}
+	}
+//	both < and > are present
+	else if ((result->boolOutfile) && (result->boolInfile)) {
+		if (countOut > 1 || countIn > 1) {
+			return 5;
+		}
+		while (j < space_delims) {
+			if (strcmp(res_space[j], ">") == 0) {
+//				if no output file exists return error 1
+				if (res_space[j + 1] == NULL) {
+					for (int k = 0; k < space_delims; k++) {
+						check_and_free(result->VarList[k])
+					}
+					return 1;
+				}
+				result->outFile = strdup(res_space[j + 1]);
+				result->boolOutfile = j;
+				j++;
+				displacement -= 2;
+			} else if (strcmp(res_space[j], "<") == 0) {
+				if (strcmp(res_space[j], "<") == 0) {
+					check_and_free(result->inFile)
+//				if no input file exists return error 1
+					if (res_space[j + 1] == NULL) {
+						for (int k = 0; k < space_delims; k++) {
+							check_and_free(result->VarList[k])
+						}
+						return 1;
+					}
+					result->inFile = strdup(res_space[j + 1]);
+					result->boolInfile = j;
+					j++;
+					displacement -= 2;
+				}
+			}
+			else {
 				result->VarList[j + displacement] = strdup(res_space[j]);
 			}
 			j++;
@@ -261,6 +308,9 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 		case 4:
 			printf("\nError: can't use jobs with pipes");
 			break;
+		case 5:
+			printf("\nError: Can have only one redirect in either direction!");
+			break;
 		default:
 			printf("\nError!");
 			break;
@@ -297,4 +347,17 @@ void convert_tabs(char *str) {
 			str[i] = ' ';
 		}
 	}
+}
+
+int countString(const char *haystack, const char *needle) {
+	int count = 0;
+	const char *tmp = haystack;
+	tmp = strstr(tmp, needle);
+	while(tmp)
+	{
+		count++;
+		tmp++;
+		tmp = strstr(tmp, needle);
+	}
+	return count;
 }
