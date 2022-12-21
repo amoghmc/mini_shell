@@ -11,7 +11,7 @@
 
 char *print_prompt();
 
-void executeCommand(commandType *input_command, parseInfo *result);
+void executeCommand(int in, int out, commandType *input_command, parseInfo *result);
 
 int MAX_PATH = 1024;
 
@@ -22,9 +22,6 @@ int main() {
 
 	using_history();
 	while (1) {
-		pid_t childPid;
-		int status;
-
 		// Display prompt and read input
 		char *buffer = print_prompt();
 		char *input = readline(buffer);
@@ -59,9 +56,21 @@ int main() {
 			executeBuiltInCommand(input_command, commType, history_get_history_state());
 		} else {
 //			create a child process for each | or & separated command
-			for (int i = 0; i < result->pipeNum; i++) {
-				executeCommand(&result->CommArray[i], result);
+			int in, pipe_file_descriptor[2];
+
+//			The first process should get its input from the original file descriptor 0
+			in = STDIN_FILENO;
+			for (int i = 0; i < result->pipeNum - 1; i++) {
+//				Source: https://stackoverflow.com/questions/8082932/connecting-n-commands-with-pipes-in-a-shell
+				pipe(pipe_file_descriptor);
+				executeCommand(in, pipe_file_descriptor[1], &result->CommArray[i], result);
+
+				/* No need for the write end of the pipe, the child will write here.  */
+				close (pipe_file_descriptor[1]);
+				/* Keep the read end of the pipe, the next child will read from there.  */
+				in = pipe_file_descriptor[0];
 			}
+			executeCommand(in, pipe_file_descriptor[1], &result->CommArray[result->pipeNum - 1], result);
 		}
 		// Free buffer that was allocated by readline
 		free:
@@ -71,31 +80,34 @@ int main() {
 	return 0;
 }
 
-void executeCommand(commandType *input_command, parseInfo *result) {
+void executeCommand(int in, int out, commandType *input_command, parseInfo *result) {
 	pid_t childPid;
 	int status;
-	int in, out;
 	childPid = fork();
 //	inside child...
 	if (childPid == 0) {
-		if (input_command->boolInfile) {
-			in = open(input_command->inFile, O_RDONLY);
-			dup2(in, STDIN_FILENO);
-			close(in);
+		if (input_command->boolInfile || input_command->boolOutfile) {
+			if (input_command->boolInfile) {
+				in = open(input_command->inFile, O_RDONLY);
+				dup2(in, STDIN_FILENO);
+				close(in);
+			}
+			if (input_command->boolOutfile) {
+				out = open(input_command->outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+				dup2(out, STDOUT_FILENO);
+				close(out);
+			}
 		}
-		if (input_command->boolOutfile) {
-			out = open(input_command->outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-			dup2(out, STDOUT_FILENO);
-			close(out);
+		else {
+			if (in != STDIN_FILENO) {
+				dup2(in, STDIN_FILENO);
+				close(in);
+			}
+			if (out != STDOUT_FILENO) {
+				dup2(out, STDOUT_FILENO);
+				close(out);
+			}
 		}
-//		if (in != STDIN_FILENO){
-//			dup2(in, STDIN_FILENO);
-//			close (in);
-//		}
-//		if (out != STDOUT_FILENO){
-//			dup2(out, STDOUT_FILENO);
-//			close(out);
-//		}
 		execvp(input_command->command, input_command->VarList);
 		perror("Error! execvp");
 		free_info(result);
