@@ -16,7 +16,7 @@ void convert_tabs(char *str);
 
 int countString(const char *haystack, const char *needle);
 
-void init_sub_command(commandType *result, char *cmd, int* countIn, int* countOut);
+void init_sub_command(commandType *result, char *cmd, int *countIn, int *countOut);
 
 //	Takes in a string cmdline, and returns a pointer to a struct parseInfo.
 //	The members of parseInfo can be seen in parse.h.  Commands are always stored
@@ -110,7 +110,7 @@ parseInfo *init_info(parseInfo *info) {
 	return info;
 }
 
-void init_sub_command(commandType *result, char *cmd, int* countIn, int* countOut) {
+void init_sub_command(commandType *result, char *cmd, int *countIn, int *countOut) {
 	result->boolInfile = false;
 	result->boolOutfile = false;
 	if (strstr(cmd, ">") != NULL) {
@@ -137,68 +137,21 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 			result->VarList[i] = strdup(res_space[i]);
 		}
 	}
-
-//	todo create pointers to the following to refactor:
-////	result->inFile, result->outFile
-////	result->boolInFile, result->boolOutFile
-//	< is present
-	else if ((!result->boolOutfile) && (result->boolInfile)) {
-		result->VarNum = 0;
-		while (j < space_delims) {
-			if (strcmp(res_space[j], "<") == 0) {
-				check_and_free(result->inFile)
-//				if no input file exists return error 1
-				if (res_space[j + 1] == NULL) {
-					for (int k = 0; k < space_delims; k++) {
-						check_and_free(result->VarList[k])
-					}
-					return 1;
-				}
-				result->inFile = strdup(res_space[j + 1]);
-				result->boolInfile = j;
-				j++;
-				displacement -= 2;
-			} else {
-				result->VarList[j + displacement] = strdup(res_space[j]);
-			}
-			j++;
-		}
-	}
-//	> is present
-	else if ((result->boolOutfile) && (!result->boolInfile)) {
-		result->VarNum = 0;
-		while (j < space_delims) {
-			if (strcmp(res_space[j], ">") == 0) {
-				check_and_free(result->outFile)
-//				if no output file exists return error 1
-				if (res_space[j + 1] == NULL) {
-					for (int k = 0; k < space_delims; k++) {
-						check_and_free(result->VarList[k])
-					}
-					return 1;
-				}
-				result->outFile = strdup(res_space[j + 1]);
-				result->boolOutfile = j;
-				j++;
-				displacement -= 2;
-			} else {
-				result->VarList[j + displacement] = strdup(res_space[j]);
-			}
-			j++;
-		}
-	}
-//	both < and > are present
-	else if ((result->boolOutfile) && (result->boolInfile)) {
+//	if either operator is present
+	else if ((result->boolOutfile) || (result->boolInfile)) {
+//	ensure only 1 redirect is present in either direction
 		if (countOut > 1 || countIn > 1) {
 			return 5;
 		}
 		while (j < space_delims) {
 			if (strcmp(res_space[j], ">") == 0) {
-//				if no output file exists return error 1
+				//			if no output file exists return error 1
 				if (res_space[j + 1] == NULL) {
 					for (int k = 0; k < space_delims; k++) {
 						check_and_free(result->VarList[k])
 					}
+					check_and_free(result->inFile)
+					check_and_free(result->outFile)
 					return 1;
 				}
 				result->outFile = strdup(res_space[j + 1]);
@@ -206,22 +159,21 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 				j++;
 				displacement -= 2;
 			} else if (strcmp(res_space[j], "<") == 0) {
-				if (strcmp(res_space[j], "<") == 0) {
-					check_and_free(result->inFile)
-//				if no input file exists return error 1
-					if (res_space[j + 1] == NULL) {
-						for (int k = 0; k < space_delims; k++) {
-							check_and_free(result->VarList[k])
-						}
-						return 1;
+				check_and_free(result->inFile)
+				//			if no input file exists return error 1
+				if (res_space[j + 1] == NULL) {
+					for (int k = 0; k < space_delims; k++) {
+						check_and_free(result->VarList[k])
 					}
-					result->inFile = strdup(res_space[j + 1]);
-					result->boolInfile = j;
-					j++;
-					displacement -= 2;
+					check_and_free(result->inFile)
+					check_and_free(result->outFile)
+					return 1;
 				}
-			}
-			else {
+				result->inFile = strdup(res_space[j + 1]);
+				result->boolInfile = j;
+				j++;
+				displacement -= 2;
+			} else {
 				result->VarList[j + displacement] = strdup(res_space[j]);
 			}
 			j++;
@@ -353,8 +305,7 @@ int countString(const char *haystack, const char *needle) {
 	int count = 0;
 	const char *tmp = haystack;
 	tmp = strstr(tmp, needle);
-	while(tmp)
-	{
+	while (tmp) {
 		count++;
 		tmp++;
 		tmp = strstr(tmp, needle);
