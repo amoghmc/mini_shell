@@ -44,7 +44,6 @@ int main() {
 		if (result == NULL) {
 			goto free;
 		}
-		print_info(result);
 
 		commandType *input_command = &result->CommArray[0];
 //		job_info* jobs = NULL;
@@ -59,30 +58,9 @@ int main() {
 		} else if (commType != NO_SUCH_BUILTIN) {
 			executeBuiltInCommand(input_command, commType, history_get_history_state());
 		} else {
-//			Source: https://stackoverflow.com/questions/8082932/connecting-n-commands-with-pipes-in-a-shell
-			int in, fd[2];
-//			The first process should get its input from the original file descriptor
-			in = STDIN_FILENO;
 //			create a child process for each | or & separated command
 			for (int i = 0; i < result->pipeNum; i++) {
-//				pipe(fd);
-				childPid = fork();
-////			inside child...
-				if (childPid == 0) {
-//					calls execvp
-					printf("Executing child process...\n\n");
-					executeCommand(&result->CommArray[i], result);
-				}
-////			inside parent...
-				else {
-//				todo how to run a daemon process?
-					if (result->boolBackground) {
-////					record in list of background jobs
-						waitpid(childPid, &status, WNOHANG);
-					} else {
-						waitpid(childPid, &status, NO_MATCH);
-					}
-				}
+				executeCommand(&result->CommArray[i], result);
 			}
 		}
 		// Free buffer that was allocated by readline
@@ -94,21 +72,46 @@ int main() {
 }
 
 void executeCommand(commandType *input_command, parseInfo *result) {
+	pid_t childPid;
+	int status;
 	int in, out;
-	if (input_command->boolInfile) {
-		in = open(input_command->inFile, O_RDONLY);
-		dup2(in, STDIN_FILENO);
-		close(in);
+	childPid = fork();
+//	inside child...
+	if (childPid == 0) {
+		if (input_command->boolInfile) {
+			in = open(input_command->inFile, O_RDONLY);
+			dup2(in, STDIN_FILENO);
+			close(in);
+		}
+		if (input_command->boolOutfile) {
+			out = open(input_command->outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+			dup2(out, STDOUT_FILENO);
+			close(out);
+		}
+//		if (in != STDIN_FILENO){
+//			dup2(in, STDIN_FILENO);
+//			close (in);
+//		}
+//		if (out != STDOUT_FILENO){
+//			dup2(out, STDOUT_FILENO);
+//			close(out);
+//		}
+		execvp(input_command->command, input_command->VarList);
+		perror("Error! execvp");
+		free_info(result);
+		exit(1);
 	}
-	if (input_command->boolOutfile) {
-		out = open(input_command->outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-		dup2(out, STDOUT_FILENO);
-		close(out);
+//	inside parent...
+	else if (childPid > 0) {
+		if (result->boolBackground) {
+////		record in list of background jobs
+			waitpid(childPid, &status, WNOHANG);
+		} else {
+			waitpid(childPid, &status, NO_MATCH);
+		}
+	} else {
+		perror("Error! fork");
 	}
-	execvp(input_command->command, input_command->VarList);
-	perror("Error! execvp");
-	free_info(result);
-	exit(1);
 }
 
 char *print_prompt() {

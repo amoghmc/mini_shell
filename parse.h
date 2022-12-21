@@ -29,8 +29,6 @@ parseInfo *parse(char *);
 
 void free_info(parseInfo *);
 
-void print_info(parseInfo *);
-
 int parse_command(commandType *result, char *cmd, char **res_space, int space_delims);
 
 char **split_string(char *cmdline, int *n_delims, char *delim);

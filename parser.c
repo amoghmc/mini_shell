@@ -93,7 +93,6 @@ parseInfo *parse(char *cmdline) {
 }
 
 parseInfo *init_info(parseInfo *info) {
-	printf("init_info: initializing parseInfo\n");
 	info = malloc(sizeof(parseInfo));
 
 	for (int i = 0; i < PIPE_MAX_NUM; i++) {
@@ -125,7 +124,6 @@ void init_sub_command(commandType *result, char *cmd, int *countIn, int *countOu
 }
 
 int parse_command(commandType *result, char *cmd, char **res_space, int space_delims) {
-	printf("parse_command: parsing a single command\n");
 	int countOut = 0, countIn = 0;
 	init_sub_command(result, cmd, &countIn, &countOut);
 
@@ -188,25 +186,6 @@ int parse_command(commandType *result, char *cmd, char **res_space, int space_de
 	return 0;
 }
 
-void print_info(parseInfo *info) {
-	printf("print_info: printing info about parseInfo struct\n");
-
-//	for each command separated by pipe
-	for (int i = 0; i < info->pipeNum; i++) {
-		printf("Command[%d]: %s\n", i, info->CommArray[i].command);
-		if (info->CommArray[i].boolInfile) {
-			printf("Infile: %s\n", info->CommArray[i].inFile);
-		}
-		if (info->CommArray[i].boolOutfile) {
-			printf("Outfile: %s\n", info->CommArray[i].outFile);
-		}
-		for (int k = 0; k < info->CommArray[i].VarNum; k++) {
-			printf("Arg[%d]: %s\n", k, info->CommArray[i].VarList[k]);
-		}
-	}
-}
-
-
 void free_info(parseInfo *info) {
 	if (info != NULL) {
 		for (int i = 0; i < info->pipeNum; i++) {
@@ -231,7 +210,7 @@ char **split_string(char *cmdline, int *n_delim, char *delim) {
 	while (delim_space) {
 		result = realloc(result, sizeof(char *) * ++(*n_delim));
 		if (result == NULL) {
-			printf("\nError: Memory allocation failed!");
+			printf("\nError: Memory allocation failed!\n");
 			exit(-1); /* memory allocation failed */
 		}
 		result[*n_delim - 1] = delim_space;
