@@ -25,7 +25,7 @@ int isBuiltInCommand(char *command) {
 	return NO_SUCH_BUILTIN;
 }
 
-void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *history_state) {
+void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *history_state, job* head) {
 	switch (type) {
 		case CD:
 			change_dir(command->VarList[1]);
@@ -39,7 +39,7 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			break;
 		case JOBS:
 //			todo
-
+			print_running_jobs(head);
 			break;
 		case KILL:
 //			todo
@@ -59,36 +59,39 @@ void change_dir(char *path) {
 
 void print_running_jobs(job *head) {
 	job *current = head;
-	printf("PID\t\tCommand\t\tStatus");
+	printf("PID\t\tCommand\t\t\tStatus\n");
+	int i = 0;
 	while(current != NULL)
 	{
-		if (kill(current->pid, 0) == 0) {
+//		check if process exist in the job list, 0 = true
+		int kill_signal = kill(current->pid, 0);
+//		check if process is running, 0 = true
+		int wait_signal = waitpid(current->pid, 0, WNOHANG);
+		if (((kill_signal == 0) && (wait_signal == 0)) && (current->pid != 0)) {
 			printf("%d\t\t%s\t\t", current->pid, current->command);
-			if (waitpid(current->pid, 0, WNOHANG) == 0) {
-				printf("Running");
-			}
-			else {
-				printf("Stopped");
-			}
+			printf("Running");
 			current = current->next;
+			printf("\n");
 		}
 		else {
-//			job* temp = current;
-//			current = current->next;
-//			free(temp);
+			current = current->next;
 		}
+		i++;
 	}
 }
 
-void append_job(job *head, pid_t pid, char* cmd) {
-	job *current = head;
-	while (current->next != NULL) {
-		current = current->next;
-	}
 
-	current->next = malloc(sizeof(job));
-	current->next->pid = pid;
-	current->next->next = NULL;
+// add job to the begining of the linked list of jobs
+void add_job(job **head, pid_t pid, char cmd[])
+{
+	job *new_job = NULL;
+
+	new_job = malloc(sizeof(job));
+	new_job->pid = pid;
+	new_job->next = *head;
+	strcpy(new_job->command, cmd);
+
+	*head = new_job;
 }
 
 void free_jobs(job* head) {

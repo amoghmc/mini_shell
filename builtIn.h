@@ -5,6 +5,7 @@
 #include <readline/history.h>
 #include <termios.h>
 #include "parse.h"
+#define MAX_COM_SIZE 100
 
 // Source for job control:
 // https://www.gnu.org/software/libc/manual/html_node/Implementing-a-Shell.html
@@ -12,16 +13,16 @@
 /* A job is a pipeline of processes.  */
 typedef struct job {
 	struct job *next;           /* next active job */
-	char *command;              /* command line, used for messages */
+	char command[MAX_COM_SIZE]; /* command line, used for messages */
 	pid_t pid;                  /* process ID */
 //	char notified;              /* true if user told about stopped job */
 } job;
 
 int isBuiltInCommand(char *command);
 
-void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *historyState);
+void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *historyState, job* head);
 
-void append_job(job *head, pid_t pid, char* cmd);
+void add_job(job **head, pid_t pid, char cmd[]);
 
 void free_jobs(job* head);
 

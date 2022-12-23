@@ -14,6 +14,7 @@ char *print_prompt();
 void executeCommand(int in, int out, commandType *input_command, parseInfo *result);
 int MAX_PATH = 1024;
 job* first_job = NULL;
+char input_copy[MAX_COM_SIZE];
 
 //	Readline template source: https://en.wikipedia.org/wiki/GNU_Readline
 int main() {
@@ -27,33 +28,35 @@ int main() {
 		char *input = readline(buffer);
 		check_and_free(buffer)
 
-//		add input to readline history.
-		add_history(input);
-		time_t t;
-		time(&t);
-		add_history_time(ctime(&t));
-
 		// Check for EOF.
 		if (!input)
 			break;
+
+//		make a copy of command for use in jobs
+		strcpy(input_copy, input);
 
 		parseInfo *result = parse(input);
 		if (result == NULL) {
 			goto free;
 		}
 
+		//	add input to readline history.
+		add_history(input_copy);
+		time_t t;
+		time(&t);
+		add_history_time(ctime(&t));
+
 		commandType *input_command = &result->CommArray[0];
-//		job_info* jobs = NULL;
-//		jobs = init_jobs(jobs);
 
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
 		if (commType == EXIT) {
 			free_info(result);
+			free_jobs(first_job);
 			check_and_free(input)
 			exit(0);
 		} else if (commType != NO_SUCH_BUILTIN) {
-			executeBuiltInCommand(input_command, commType, history_get_history_state());
+			executeBuiltInCommand(input_command, commType, history_get_history_state(), first_job);
 		} else {
 //			create a child process for each | or & separated command
 			int in, pipe_file_descriptor[2];
@@ -117,7 +120,7 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 		if (result->boolBackground) {
 ////		record in list of background jobs
 //			todo
-//			append_job(first_job, childPid, )
+			add_job(&first_job, childPid, input_copy);
 			waitpid(childPid, &status, WNOHANG);
 		} else {
 			waitpid(childPid, &status, NO_MATCH);
