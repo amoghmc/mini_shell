@@ -38,7 +38,6 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			putchar('\n');
 			break;
 		case JOBS:
-//			todo
 			print_running_jobs(head);
 			break;
 		case KILL:
@@ -59,8 +58,12 @@ void change_dir(char *path) {
 
 void print_running_jobs(job *head) {
 	job *current = head;
-	printf("PID\t\tCommand\t\t\tStatus\n");
-	int i = 0;
+	if (current != NULL)
+		printf("PID\t\tCommand\t\t\tStatus\n");
+	else {
+		printf("jobs: There are no jobs running!\n");
+		return;
+	}
 	while(current != NULL)
 	{
 //		check if process exist in the job list, 0 = true
@@ -76,7 +79,6 @@ void print_running_jobs(job *head) {
 		else {
 			current = current->next;
 		}
-		i++;
 	}
 }
 
