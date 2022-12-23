@@ -4,3 +4,4 @@ shell
 cmake-build-debug
 CMakeLists.txt
 *.txt
+*.sh

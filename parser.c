@@ -1,6 +1,5 @@
 /************************************************************************  
- *   parse.c  -  The parsing portion of my small shell
- *   Syntax:     shell command1 [< infile] [| command]* [> outfile] [&] todo pipes
+ *   parse.c  -  The parsing portion of the shell
  ************************************************************************/
 
 #include <string.h>

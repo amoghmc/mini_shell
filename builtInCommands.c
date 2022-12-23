@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
 #include "builtIn.h"
 
 void change_dir(char *path);
-
-job *first_job = NULL;
 
 const char *builtInArray[LEN] = {
 		"exit",
@@ -39,6 +39,7 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			break;
 		case JOBS:
 //			todo
+
 			break;
 		case KILL:
 //			todo
@@ -56,33 +57,46 @@ void change_dir(char *path) {
 	}
 }
 
-/* Find the active job with the indicated pgid.  */
-job *find_job(pid_t pgid) {
-	job *j;
-
-	for (j = first_job; j; j = j->next)
-		if (j->pgid == pgid)
-			return j;
-	return NULL;
+void print_running_jobs(job *head) {
+	job *current = head;
+	printf("PID\t\tCommand\t\tStatus");
+	while(current != NULL)
+	{
+		if (kill(current->pid, 0) == 0) {
+			printf("%d\t\t%s\t\t", current->pid, current->command);
+			if (waitpid(current->pid, 0, WNOHANG) == 0) {
+				printf("Running");
+			}
+			else {
+				printf("Stopped");
+			}
+			current = current->next;
+		}
+		else {
+//			job* temp = current;
+//			current = current->next;
+//			free(temp);
+		}
+	}
 }
 
-/* Return true if all processes in the job have stopped or completed.  */
-int job_is_stopped(job *j) {
-	process *p;
+void append_job(job *head, pid_t pid, char* cmd) {
+	job *current = head;
+	while (current->next != NULL) {
+		current = current->next;
+	}
 
-	for (p = j->first_process; p; p = p->next)
-		if (!p->completed && !p->stopped)
-			return 0;
-	return 1;
+	current->next = malloc(sizeof(job));
+	current->next->pid = pid;
+	current->next->next = NULL;
 }
 
-/* Return true if all processes in the job have completed.  */
-int job_is_completed(job *j) {
-	process *p;
-
-	for (p = j->first_process; p; p = p->next)
-		if (!p->completed)
-			return 0;
-	return 1;
+void free_jobs(job* head) {
+	job* tmp;
+	while (head != NULL)
+	{
+		tmp = head;
+		head = head->next;
+		free(tmp);
+	}
 }
-

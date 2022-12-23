@@ -12,15 +12,15 @@
 char *print_prompt();
 
 void executeCommand(int in, int out, commandType *input_command, parseInfo *result);
-
 int MAX_PATH = 1024;
+job* first_job = NULL;
 
 //	Readline template source: https://en.wikipedia.org/wiki/GNU_Readline
 int main() {
 	// Configure readline to disable tab completion
 	rl_bind_key('\t', rl_insert);
-
 	using_history();
+
 	while (1) {
 		// Display prompt and read input
 		char *buffer = print_prompt();
@@ -70,7 +70,7 @@ int main() {
 				/* Keep the read end of the pipe, the next child will read from there.  */
 				in = pipe_file_descriptor[0];
 			}
-			executeCommand(in, pipe_file_descriptor[1], &result->CommArray[result->pipeNum - 1], result);
+			executeCommand(in, STDOUT_FILENO, &result->CommArray[result->pipeNum - 1], result);
 		}
 		// Free buffer that was allocated by readline
 		free:
@@ -97,7 +97,7 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 				dup2(out, STDOUT_FILENO);
 				close(out);
 			}
-		} else {
+		} else if (!result->boolBackground){
 			if (in != STDIN_FILENO) {
 				dup2(in, STDIN_FILENO);
 				close(in);
@@ -116,6 +116,8 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 	else if (childPid > 0) {
 		if (result->boolBackground) {
 ////		record in list of background jobs
+//			todo
+//			append_job(first_job, childPid, )
 			waitpid(childPid, &status, WNOHANG);
 		} else {
 			waitpid(childPid, &status, NO_MATCH);
