@@ -5,7 +5,7 @@
 #include <readline/history.h>
 #include <termios.h>
 #include "parse.h"
-#define MAX_COM_SIZE 100
+#define MAX_COM_SIZE 256
 
 // Source for job control:
 // https://www.gnu.org/software/libc/manual/html_node/Implementing-a-Shell.html

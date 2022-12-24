@@ -119,7 +119,7 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 	else if (childPid > 0) {
 		if (result->boolBackground) {
 //			record in list of background jobs
-			add_job(&first_job, childPid, input_copy);
+			add_job(&first_job, childPid, input_command->command);
 			waitpid(childPid, &status, WNOHANG);
 		} else {
 			waitpid(childPid, &status, NO_MATCH);

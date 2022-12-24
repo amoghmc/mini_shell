@@ -4,9 +4,15 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <stdbool.h>
+#include <limits.h>
+#include <errno.h>
 #include "builtIn.h"
 
 void change_dir(char *path);
+void free_terminated_jobs(job* head);
+void kill_job(job* head, char* cmd);
+bool parseLong(const char *str, long *val);
 
 const char *builtInArray[LEN] = {
 		"exit",
@@ -38,10 +44,12 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			putchar('\n');
 			break;
 		case JOBS:
+//			todo
+//			free_terminated_jobs(head);
 			print_running_jobs(head);
 			break;
 		case KILL:
-//			todo
+			kill_job(head, command->VarList[1]);
 			break;
 		default:
 			printf("\nError! No such builtin command!\n");
@@ -58,12 +66,7 @@ void change_dir(char *path) {
 
 void print_running_jobs(job *head) {
 	job *current = head;
-	if (current != NULL)
-		printf("PID\t\tCommand\t\t\tStatus\n");
-	else {
-		printf("jobs: There are no jobs running!\n");
-		return;
-	}
+	int check = false;
 	while(current != NULL)
 	{
 //		check if process exist in the job list, 0 = true
@@ -71,8 +74,11 @@ void print_running_jobs(job *head) {
 //		check if process is running, 0 = true
 		int wait_signal = waitpid(current->pid, 0, WNOHANG);
 		if (((kill_signal == 0) && (wait_signal == 0)) && (current->pid != 0)) {
-			printf("%d\t\t%s\t\t", current->pid, current->command);
-			printf("Running");
+			if (!check) {
+				printf("PID\t\tCommand\t\t\tStatus\n");
+				check = true;
+			}
+			printf("%d\t\t%s\t\tRunning", current->pid, current->command);
 			current = current->next;
 			printf("\n");
 		}
@@ -80,10 +86,13 @@ void print_running_jobs(job *head) {
 			current = current->next;
 		}
 	}
+	if (!check) {
+		printf("jobs: There are no jobs running!\n");
+	}
 }
 
 
-// add job to the begining of the linked list of jobs
+// add job to the beginning of the linked list of jobs
 void add_job(job **head, pid_t pid, char cmd[])
 {
 	job *new_job = NULL;
@@ -104,4 +113,56 @@ void free_jobs(job* head) {
 		head = head->next;
 		free(tmp);
 	}
+}
+
+void free_terminated_jobs(job* head) {
+	job *current = head;
+	while(current != NULL)
+	{
+//		check if process exist in the job list, 0 = true
+		int kill_signal = kill(current->pid, 0);
+//		check if process is running, 0 = true
+		int wait_signal = waitpid(current->pid, 0, WNOHANG);
+		if (((kill_signal == 0) && (wait_signal == 0)) && (current->pid != 0)) {
+			current = current->next;
+		}
+		else {
+			job* temp = current;
+			current = current->next;
+			check_and_free(temp)
+		}
+	}
+}
+
+void kill_job(job* head, char* cmd) {
+	job *current = head;
+	while(current != NULL)
+	{
+		long int pid = 0;
+		if ((cmd != NULL) && (!parseLong(cmd, &pid))) {
+			printf("Error: Invalid command!\n");
+			return;
+		}
+		else if (current->pid == pid) {
+			kill(current->pid, SIGKILL);
+			return;
+		}
+		current = current->next;
+	}
+	printf("Error: No such job exists!\n");
+}
+
+//	Source: https://stackoverflow.com/questions/14176123/correct-usage-of-strtol
+bool parseLong(const char *str, long *val)
+{
+	char *temp;
+	bool rc = true;
+	errno = 0;
+	*val = strtol(str, &temp, 0);
+
+	if (temp == str || *temp != '\0' ||
+		((*val == LONG_MIN || *val == LONG_MAX) && errno == ERANGE))
+		rc = false;
+
+	return rc;
 }
