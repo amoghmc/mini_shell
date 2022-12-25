@@ -1,6 +1,6 @@
 CFLAGS=-DUNIX -lreadline
-#DEBUG=-g
-DEBUG=
+DEBUG=-g
+#DEBUG=
 
 all: shell
 
