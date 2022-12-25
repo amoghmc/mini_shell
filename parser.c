@@ -66,7 +66,7 @@ parseInfo *parse(char *cmdline) {
 		return NULL;
 	}
 
-	if (pipe_delims > 0 && (strcmp(delim, "&") == 0)) {
+	if (pipe_delims > 1 && (strcmp(delim, "&") == 0)) {
 		error_check(Result, result_pipe, NULL, 7);
 		return NULL;
 	}
