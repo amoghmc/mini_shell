@@ -78,8 +78,14 @@ parseInfo *parse(char *cmdline) {
 		char *cmd_copy = strdup(result_pipe[i]);
 		char **result_space = split_string(result_pipe[i], &space_delims, " ");
 
-		if (space_delims > MAX_VAR_NUM || result_space[0] == NULL) {
+		if (space_delims > MAX_VAR_NUM) {
 			error_check(Result, result_pipe, result_space, 3);
+			check_and_free(cmd_copy)
+			return NULL;
+		}
+
+		if (result_space[0] == NULL) {
+			error_check(Result, result_pipe, result_space, -1);
 			check_and_free(cmd_copy)
 			return NULL;
 		}
@@ -252,7 +258,7 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 			printf("\nError: can't use I/O redirection with pipes");
 			break;
 		default:
-			printf("\nError!");
+			printf("\nError: Invalid command");
 			break;
 	}
 	check_and_free(info)
