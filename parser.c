@@ -65,6 +65,12 @@ parseInfo *parse(char *cmdline) {
 		error_check(Result, result_pipe, NULL, 2);
 		return NULL;
 	}
+
+	if (pipe_delims > 0 && (strcmp(delim, "&") == 0)) {
+		error_check(Result, result_pipe, NULL, 7);
+		return NULL;
+	}
+
 	int i;
 
 //	for each sub-command separated by pipe delimiter
@@ -256,6 +262,9 @@ void error_check(parseInfo *info, char **res_pipe, char **res_space, int type) {
 			break;
 		case 6:
 			printf("\nError: can't use I/O redirection with pipes");
+			break;
+		case 7:
+			printf("\nError: can execute only one background job at a time");
 			break;
 		default:
 			printf("\nError: Invalid command");
