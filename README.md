@@ -69,7 +69,7 @@ You can install the [GNU Readline library](https://en.wikipedia.org/wiki/GNU_Rea
 
 ### Installation
 
-1. Automatically compile the file using make,
+1. Automatically compile the project using make,
    ```sh
    make
    ```
