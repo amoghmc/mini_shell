@@ -1,6 +1,6 @@
 <h3 align="center">Mini Linux Shell</h3>
   <p align="center">
-    Linux shell made in C that emulates bash
+    Mini shell made in C for Linux using GNU Readline Library
   </p>
 
 <!-- TABLE OF CONTENTS -->
