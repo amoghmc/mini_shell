@@ -12,6 +12,7 @@
 void change_dir(char *path);
 
 void kill_job(job *head, char *cmd);
+void kill_all_jobs(job *head);
 
 bool parseLong(const char *str, long *val);
 
@@ -51,7 +52,10 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			print_running_jobs(head);
 			break;
 		case KILL:
-			kill_job(head, command->VarList[1]);
+			if (strcmp(command->VarList[1], "all") == 0)
+				kill_all_jobs(head);
+			else
+				kill_job(head, command->VarList[1]);
 			break;
 		default:
 			printf("\nError! No such builtin command!\n");
@@ -123,6 +127,13 @@ void free_jobs(job *head) {
 	}
 }
 
+void kill_all_jobs(job *head) {
+	job *tmp = head;
+	while (tmp != NULL) {
+		kill(tmp->pid, SIGKILL);
+		tmp = tmp->next;
+	}
+}
 
 void kill_job(job *head, char *cmd) {
 	job *current = head;
