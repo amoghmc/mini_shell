@@ -32,7 +32,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-* Inspired by Cornell's CS 414's Shell assignment, this project aims to emulate a shell in C, much like Csh or Bash
+* Inspired by Cornell's CS 414's Shell assignment, this project aims to create a shell in C, much like Csh or Bash
 * Implements various advanced programming techniques such as process creation and control,
 file descriptors, signals, I/O redirection and pipelines
 * Takes in a list of commands separated by space or pipes and parses it into individual components such as commands, flags, I/O files, pipe and I/O operators
