@@ -10,9 +10,12 @@
 #include "builtIn.h"
 
 void change_dir(char *path);
-void free_terminated_jobs(job* head);
-void kill_job(job* head, char* cmd);
+
+void kill_job(job *head, char *cmd);
+
 bool parseLong(const char *str, long *val);
+
+bool is_running(job *foo);
 
 const char *builtInArray[LEN] = {
 		"exit",
@@ -31,7 +34,7 @@ int isBuiltInCommand(char *command) {
 	return NO_SUCH_BUILTIN;
 }
 
-void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *history_state, job* head) {
+void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *history_state, job *head) {
 	switch (type) {
 		case CD:
 			change_dir(command->VarList[1]);
@@ -45,7 +48,6 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			break;
 		case JOBS:
 //			todo
-//			free_terminated_jobs(head);
 			print_running_jobs(head);
 			break;
 		case KILL:
@@ -67,13 +69,8 @@ void change_dir(char *path) {
 void print_running_jobs(job *head) {
 	job *current = head;
 	int check = false;
-	while(current != NULL)
-	{
-//		check if process exist in the job list, 0 = true
-		int kill_signal = kill(current->pid, 0);
-//		check if process is running, 0 = true
-		int wait_signal = waitpid(current->pid, 0, WNOHANG);
-		if (((kill_signal == 0) && (wait_signal == 0)) && (current->pid != 0)) {
+	while (current != NULL) {
+		if (is_running(current)) {
 			if (!check) {
 				printf("PID\t\tCommand\t\t\tStatus\n");
 				check = true;
@@ -81,8 +78,7 @@ void print_running_jobs(job *head) {
 			printf("%d\t\t%s\t\tRunning", current->pid, current->command);
 			current = current->next;
 			printf("\n");
-		}
-		else {
+		} else {
 			current = current->next;
 		}
 	}
@@ -93,8 +89,7 @@ void print_running_jobs(job *head) {
 
 
 // add job to the beginning of the linked list of jobs
-void add_job(job **head, pid_t pid, char cmd[])
-{
+void add_job(job **head, pid_t pid, char cmd[]) {
 	job *new_job = NULL;
 
 	new_job = malloc(sizeof(job));
@@ -105,46 +100,43 @@ void add_job(job **head, pid_t pid, char cmd[])
 	*head = new_job;
 }
 
-void free_jobs(job* head) {
-	job* tmp;
-	while (head != NULL)
-	{
+void copy_running_jobs(job **head) {
+	job *new = NULL;
+	job *current = *head;
+	while (current != NULL) {
+		if (is_running(current)) {
+			add_job(&new, current->pid, current->command);
+		}
+		current = current->next;
+	}
+	job *temp = *head;
+	*head = new;
+	free_jobs(temp);
+}
+
+void free_jobs(job *head) {
+	job *tmp;
+	while (head != NULL) {
 		tmp = head;
 		head = head->next;
 		free(tmp);
 	}
 }
 
-void free_terminated_jobs(job* head) {
-	job *current = head;
-	while(current != NULL)
-	{
-//		check if process exist in the job list, 0 = true
-		int kill_signal = kill(current->pid, 0);
-//		check if process is running, 0 = true
-		int wait_signal = waitpid(current->pid, 0, WNOHANG);
-		if (((kill_signal == 0) && (wait_signal == 0)) && (current->pid != 0)) {
-			current = current->next;
-		}
-		else {
-			job* temp = current;
-			current = current->next;
-			check_and_free(temp)
-		}
-	}
-}
 
-void kill_job(job* head, char* cmd) {
+void kill_job(job *head, char *cmd) {
 	job *current = head;
-	while(current != NULL)
-	{
-		long int pid = 0;
-		if ((cmd != NULL) && (!parseLong(cmd, &pid))) {
-			printf("Error: Invalid command!\n");
-			return;
-		}
-		else if (current->pid == pid) {
+	long int pid = 0;
+	if ((cmd != NULL) && (!parseLong(cmd, &pid))) {
+		printf("Error: Invalid command!\n");
+		return;
+	}
+	while (current != NULL) {
+		if (current->pid == pid && is_running(current)) {
 			kill(current->pid, SIGKILL);
+			return;
+		} else if (current->pid == pid) {
+			printf("Error: No such job exists!\n");
 			return;
 		}
 		current = current->next;
@@ -153,8 +145,7 @@ void kill_job(job* head, char* cmd) {
 }
 
 //	Source: https://stackoverflow.com/questions/14176123/correct-usage-of-strtol
-bool parseLong(const char *str, long *val)
-{
+bool parseLong(const char *str, long *val) {
 	char *temp;
 	bool rc = true;
 	errno = 0;
@@ -165,4 +156,15 @@ bool parseLong(const char *str, long *val)
 		rc = false;
 
 	return rc;
+}
+
+bool is_running(job *foo) {
+	//	check if process exist in the job list, 0 = true
+	int kill_signal = kill(foo->pid, 0);
+	//	check if process is running, 0 = true
+	int wait_signal = waitpid(foo->pid, 0, WNOHANG);
+	if (kill_signal == 0 && wait_signal == 0) {
+		return true;
+	}
+	return false;
 }

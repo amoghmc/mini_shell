@@ -12,8 +12,9 @@
 char *print_prompt();
 
 void executeCommand(int in, int out, commandType *input_command, parseInfo *result);
+
 int MAX_PATH = 1024;
-job* first_job = NULL;
+job *first_job = NULL;
 char input_copy[MAX_COM_SIZE];
 
 //	Readline template source: https://en.wikipedia.org/wiki/GNU_Readline
@@ -51,10 +52,15 @@ int main() {
 //		execute builtin command in parent process
 		int commType = isBuiltInCommand(input_command->command);
 		if (commType == EXIT) {
-			free_info(result);
-			free_jobs(first_job);
-			check_and_free(input)
-			exit(0);
+			copy_running_jobs(&first_job);
+			if (first_job != NULL) {
+				printf("Can't exit as there are background jobs running! Please kill them first.\n");
+			} else {
+				free_info(result);
+				free_jobs(first_job);
+				check_and_free(input)
+				exit(0);
+			}
 		} else if (commType != NO_SUCH_BUILTIN) {
 			executeBuiltInCommand(input_command, commType, history_get_history_state(), first_job);
 		} else {
@@ -100,7 +106,7 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 				dup2(out, STDOUT_FILENO);
 				close(out);
 			}
-		} else if (!result->boolBackground){
+		} else if (!result->boolBackground) {
 			if (in != STDIN_FILENO) {
 				dup2(in, STDIN_FILENO);
 				close(in);
@@ -119,7 +125,9 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 	else if (childPid > 0) {
 		if (result->boolBackground) {
 //			record in list of background jobs
-			add_job(&first_job, childPid, input_command->command);
+//			TODO: split string with &
+			copy_running_jobs(&first_job);
+			add_job(&first_job, childPid, input_copy);
 			waitpid(childPid, &status, WNOHANG);
 		} else {
 			waitpid(childPid, &status, NO_MATCH);

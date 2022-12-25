@@ -5,6 +5,7 @@
 #include <readline/history.h>
 #include <termios.h>
 #include "parse.h"
+
 #define MAX_COM_SIZE 256
 
 // Source for job control:
@@ -20,15 +21,17 @@ typedef struct job {
 
 int isBuiltInCommand(char *command);
 
-void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *historyState, job* head);
+void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *historyState, job *head);
 
 void add_job(job **head, pid_t pid, char cmd[]);
 
-void free_jobs(job* head);
+void copy_running_jobs(job **head);
+
+void free_jobs(job *head);
 
 void print_running_jobs(job *head);
 
-		enum
+enum
 BUILTIN_COMMANDS {
 	EXIT, CD, HISTORY, JOBS, KILL, LEN, NO_SUCH_BUILTIN
 };
