@@ -51,9 +51,14 @@ parseInfo *parse(char *cmdline) {
 	Result = init_info(Result);
 
 	char delim[] = "|";
+	bool delim_present = false;
 	if (strpbrk(cmdline, "&")) {
 		Result->boolBackground = true;
 		strcpy(delim, "&");
+		delim_present = true;
+	}
+	else if (strpbrk(cmdline, "|")) {
+		delim_present = true;
 	}
 
 	int pipe_delims, space_delims = 0;
@@ -68,6 +73,11 @@ parseInfo *parse(char *cmdline) {
 
 	if (pipe_delims > 1 && (strcmp(delim, "&") == 0)) {
 		error_check(Result, result_pipe, NULL, 7);
+		return NULL;
+	}
+
+	if (delim_present && pipe_delims == 0) {
+		error_check(Result, result_pipe, NULL, 8);
 		return NULL;
 	}
 
