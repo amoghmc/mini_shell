@@ -107,10 +107,6 @@ You can install the [GNU Readline library](https://en.wikipedia.org/wiki/GNU_Rea
    exit 
    ```
 
-## Usage examples
-
-TODO
-
 <!-- CONTRIBUTING -->
 ## Contributing
 
