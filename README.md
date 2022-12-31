@@ -81,7 +81,33 @@ You can install the [GNU Readline library](https://en.wikipedia.org/wiki/GNU_Rea
 
 
 <!-- USAGE EXAMPLES -->
-## Usage
+## Using built-in commands 
+
+*  Go to the specified directory:
+   ```
+   cd path/to/directory
+   ```
+*  View jobs spawned by the current shell:
+   ```
+   jobs 
+   ```
+
+
+*  Display the commands history list:
+   ```
+   history 
+   ```
+
+*  Kill a background job:
+   ```
+   kill [process_id] 
+   ```
+*  Exit the shell:
+   ```
+   exit 
+   ```
+
+## Usage examples
 
 TODO
 
