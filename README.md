@@ -85,7 +85,7 @@ You can install the [GNU Readline library](https://en.wikipedia.org/wiki/GNU_Rea
 
 *  Go to the specified directory:
    ```
-   cd path/to/directory
+   cd [path/to/directory]
    ```
 *  View jobs spawned by the current shell:
    ```
