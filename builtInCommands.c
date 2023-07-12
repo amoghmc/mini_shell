@@ -48,7 +48,6 @@ void executeBuiltInCommand(commandType *command, int type, HISTORY_STATE *histor
 			putchar('\n');
 			break;
 		case JOBS:
-//			todo
 			print_running_jobs(head);
 			break;
 		case KILL:
