@@ -125,7 +125,6 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 	else if (childPid > 0) {
 		if (result->boolBackground) {
 //			record in list of background jobs
-//			TODO: split string with &
 			copy_running_jobs(&first_job);
 			add_job(&first_job, childPid, input_copy);
 			waitpid(childPid, &status, WNOHANG);
