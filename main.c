@@ -137,10 +137,8 @@ void executeCommand(int in, int out, commandType *input_command, parseInfo *resu
 }
 
 char *print_prompt() {
-	char *buffer;
-	char *cwd, *host = NULL;
+	char *buffer, *cwd, *host = NULL;
 	size_t allocSize = sizeof(char) * MAX_PATH;
-	cwd = (char *) malloc(allocSize);
 	buffer = (char *) malloc(allocSize);
 
 //	Source: https://stackoverflow.com/questions/504810/how-do-i-find-the-current-machines-full-hostname-in-c-hostname-and-domain-info
@@ -150,9 +148,10 @@ char *print_prompt() {
 
 //	Source: https://stackoverflow.com/questions/298510/how-to-get-the-current-directory-in-a-c-program
 //	Gets current path of user
+	cwd = (char *) malloc(allocSize);
 	getcwd(cwd, allocSize);
 
-	snprintf(buffer, MAX_PATH, "%s@%s:%s$ ", getlogin(), host, cwd);
+	snprintf(buffer, MAX_PATH, "%s@%s:%s$ ", getenv("USER"), host, cwd);
 	free_and_null(cwd)
 	free_and_null(host)
 	return buffer;
